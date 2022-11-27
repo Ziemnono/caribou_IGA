@@ -8,6 +8,7 @@ set(HEADER_FILES
     Base/BaseSegment.h
     Base/BaseTetrahedron.h
     Base/BaseTriangle.h
+    Base/BaseSpline.h
     Element.h
     Hexahedron.h
     Quad.h
@@ -16,6 +17,7 @@ set(HEADER_FILES
     Segment.h
     Tetrahedron.h
     Triangle.h
+    Spline.h
 )
 
 find_package(Eigen3 QUIET REQUIRED)
