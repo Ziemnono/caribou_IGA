@@ -68,6 +68,7 @@ template <typename Derived>
 #include "test_hexahedron20.h"
 #include "test_rectangular_hexahedron.h"
 #include "test_rectangular_hexahedron20.h"
+#include "test_spline.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
