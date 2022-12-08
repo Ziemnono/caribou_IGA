@@ -58,11 +58,11 @@ TEST(Spline, Quadratic) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = spline.jacobian(x)[0];
-            numerical_solution += p2(spline.world_coordinates(x)) * w * detJ;
+            numerical_solution += p1(spline.world_coordinates(x)) * w * detJ;
         }
         FLOATING_POINT_TYPE x0 = spline.node(0)[0];
         FLOATING_POINT_TYPE x2 = spline.node(2)[0];
-        auto analytic_solution = static_cast<FLOATING_POINT_TYPE>((2 * x2*x2*x2 / 3. + 5*x2) - (2 * x0*x0*x0 / 3. + 5*x0)) ;
+        auto analytic_solution = static_cast<FLOATING_POINT_TYPE>((5*x2 + x2 * x2) - (5*x0 + x0 * x0)) ;
         EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
 
     }
@@ -89,23 +89,23 @@ TEST(Spline, Quadratic) {
             EXPECT_DOUBLE_EQ(spline.interpolate(x, values), p1(spline.world_coordinates(x)));
         }
 
-//        FLOATING_POINT_TYPE numerical_solution = 0;
-//        for (const auto & gauss_node : spline.gauss_nodes()) {
-//            const auto x = gauss_node.position;
-//            const auto w = gauss_node.weight;
-//            const auto J =  spline.jacobian(x);
-//            const auto detJ = J.norm();
-//            numerical_solution += p1(spline.world_coordinates(x)) * w * detJ;
-//        }
+        FLOATING_POINT_TYPE numerical_solution = 0;
+        for (const auto & gauss_node : spline.gauss_nodes()) {
+            const auto x = gauss_node.position;
+            const auto w = gauss_node.weight;
+            const auto J =  spline.jacobian(x);
+            const auto detJ = J.norm();
+            numerical_solution += p1(spline.world_coordinates(x)) * w * detJ;
+        }
 
-//        // Integration
-//        const auto x0 = node_0[0]; // a
-//        const auto y0 = node_0[1]; // c
-//        const auto x2 = node_2[0]; // b
-//        const auto y2 = node_2[1]; // d
-//        const auto d = (node_1 - node_0).norm();
-//        FLOATING_POINT_TYPE analytic_solution = d * (1/3.*x0*(2*y0+y2) + 1/3.*x2*(2*y2+y0) + y0*y0 + y0*y2 + y2*y2 + 5);
-//        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
+        // Integration
+        const auto x0 = node_0[0]; // a
+        const auto y0 = node_0[1]; // c
+        const auto x2 = node_2[0]; // b
+        const auto y2 = node_2[1]; // d
+        const auto d = (node_2 - node_0).norm();
+        FLOATING_POINT_TYPE analytic_solution = d * (x0 + x2 + 3*y0/2. + 3*y2/2. + 5);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
 
     }
     // 3D
@@ -124,11 +124,32 @@ TEST(Spline, Quadratic) {
         EXPECT_DOUBLE_EQ(spline.center()[1], center_node[1]);
         EXPECT_DOUBLE_EQ(spline.center()[2], center_node[2]);
 
-//        // Interpolation
-//        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(node_0), p1(node_1), p1(node_2));
-//        for (const auto & gauss_node : spline.gauss_nodes()) {
-//            const auto x = gauss_node.position;
-//            EXPECT_DOUBLE_EQ(spline.interpolate(x, values), p1(spline.world_coordinates(x)));
-//        }
+        // Interpolation
+        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(node_0), p1(node_1), p1(node_2));
+        for (const auto & gauss_node : spline.gauss_nodes()) {
+            const auto x = gauss_node.position;
+            EXPECT_DOUBLE_EQ(spline.interpolate(x, values), p1(spline.world_coordinates(x)));
+        }
+
+        // Integration
+        FLOATING_POINT_TYPE numerical_solution = 0;
+        for (const auto & gauss_node : spline.gauss_nodes()) {
+            const auto x = gauss_node.position;
+            const auto w = gauss_node.weight;
+            const auto J =  spline.jacobian(x);
+            const auto detJ = J.norm();
+            numerical_solution += p1(spline.world_coordinates(x)) * w * detJ;
+        }
+
+        const auto x0 = node_0[0];
+        const auto y0 = node_0[1];
+        const auto z0 = node_0[2];
+        const auto x2 = node_2[0];
+        const auto y2 = node_2[1];
+        const auto z2 = node_2[2];
+        const auto d = (node_2 - node_0).norm();
+        FLOATING_POINT_TYPE analytic_solution = d * (x0 + x2 + 3*y0/2. + 3*y2/2. + 2*z0 + 2*z2 + 5);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
+
     }
 }
