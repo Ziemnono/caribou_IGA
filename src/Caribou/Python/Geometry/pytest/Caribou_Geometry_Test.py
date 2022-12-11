@@ -11,6 +11,7 @@ sys.path.insert(0, str(site_packages_dir))
 print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
 from Caribou.Geometry import Segment, Segment3
+from Caribou.Geometry import Spline
 from Caribou.Geometry import Quad, Quad8
 from Caribou.Geometry import Triangle, Triangle6
 from Caribou.Geometry import Tetrahedron, Tetrahedron10
@@ -34,6 +35,67 @@ def p2(p):
     else:
         return 5 + 2*p[0]*p[1] + 3*p[1]*p[2]+ 4*p[2]*p[2]
 
+class TestSpline(unittest.TestCase):
+
+    def assertMatrixEqual(self, A, B):
+        return self.assertTrue((A == B).all(), f"Matrices are not equal, with \nA={A} \nand\nB={B}")
+
+    def test_constructor_linear(self):
+        s = Spline()
+        self.assertTrue((s.nodes() == np.array([-1., 0., 1.])).all())
+
+        # 1D
+        s = Spline(-5, 0, 5)
+        self.assertTrue((s.nodes() == np.array([-5., 0., 5.])).all())
+
+        s = Spline([-5, 0, 5])
+        self.assertTrue((s.nodes() == np.array([-5., 0., 5.])).all())
+
+        s = Spline([[-5], [0], [5]])
+        self.assertTrue((s.nodes() == np.array([-5., 0., 5.])).all())
+
+        # 2D
+        s = Spline([-5, 4], [0, 0], [5, -4])
+        self.assertTrue((s.nodes() == np.array([[-5, 4], [0, 0], [5, -4]])).all())
+
+        s = Spline([[-5, 4], [0, 0], [5, -4]])
+        self.assertTrue((s.nodes() == np.array([[-5, 4], [0, 0], [5, -4]])).all())
+
+        # 3D
+        s = Spline([-5, 4, 1], [0, 0, 1], [5, -4, 1])
+        self.assertTrue((s.nodes() == np.array([[-5, 4, 1], [0, 0, 1], [5, -4, 1]])).all())
+
+        s = Spline([[-5, 4, 1], [0, 0, 1], [5, -4, 1]])
+        self.assertTrue((s.nodes() == np.array([[-5, 4, 1], [0, 0, 1], [5, -4, 1]])).all())
+
+    def test_linear_1D(self):
+        # Shape functions
+        s = Spline()
+        self.assertTrue((s.nodes() == np.array([-1., 0., 1.])).all())
+        self.assertTrue((s.L([-1]) == [1, 0, 0]).all())
+        self.assertTrue((s.L([0]) == [0.25, 0.5, 0.25]).all())
+
+        s = Spline(-5.5, -2.2, 1.1)
+
+        # Center
+        self.assertEqual(s.center()[0], -2.2)
+
+        # Inverse transformation
+        for gauss_node in s.gauss_nodes():
+            self.assertMatrixEqual(gauss_node.position, s.local_coordinates(s.world_coordinates(gauss_node.position)))
+
+        # Contains point
+        s.contains_local(s.local_coordinates(s.center()))
+
+        # Integration
+        numerical_solution = 0.
+        for gauss_node in s.gauss_nodes():
+            x = gauss_node.position
+            w = gauss_node.weight
+            detJ = s.jacobian(x)[0]
+            numerical_solution += p1(s.world_coordinates(x)) * w * detJ
+        analytic_solution = (5*1.1 + (1.1*1.1)) - (-5.5*5 + (-5.5)*(-5.5))
+        self.assertAlmostEqual(numerical_solution, analytic_solution, delta=1e-10)
 
 class TestSegment(unittest.TestCase):
 
@@ -124,6 +186,7 @@ class TestSegment(unittest.TestCase):
             numerical_solution += p1(s.world_coordinates(x)) * w * detJ
         analytic_solution = (5*1.1 + (1.1*1.1)) - (-5.5*5 + (-5.5)*(-5.5))
         self.assertAlmostEqual(numerical_solution, analytic_solution, delta=1e-10)
+
 
 
 class TestQuad(unittest.TestCase):

@@ -20,6 +20,7 @@ set(SOURCE_FILES
     Segment.cpp
     Tetrahedron.cpp
     Triangle.cpp
+    Spline.cpp
 )
 
 caribou_add_python_module(Geometry
