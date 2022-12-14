@@ -35,12 +35,10 @@ void declare_spline(py::module & m, const std::string & name) {
     });
 }
 
-void create_Spline(pybind11::module & m) {
+void create_spline(pybind11::module & m) {
     declare_spline<Spline<_1D>>(m, "Spline_1D");
 
-
     declare_spline<Spline<_2D>>(m, "Spline_2D");
-
 
     declare_spline<Spline<_3D>>(m, "Spline_3D");
 
