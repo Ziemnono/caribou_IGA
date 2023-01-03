@@ -28,6 +28,7 @@ FLOATING_POINT_TYPE p2(const LocalCoordinates & p) {
     return 0;
 }
 
+
 template <typename Derived>
 ::testing::AssertionResult CmpHelperMatrixEQ(const char* lhs_expression,
                                              const char* rhs_expression,
@@ -69,6 +70,8 @@ template <typename Derived>
 #include "test_rectangular_hexahedron.h"
 #include "test_rectangular_hexahedron20.h"
 #include "test_spline.h"
+#include "test_beziercrv.h"
+#include "test_beziersurf.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

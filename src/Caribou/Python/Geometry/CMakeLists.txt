@@ -21,6 +21,8 @@ set(SOURCE_FILES
     Tetrahedron.cpp
     Triangle.cpp
     Spline.cpp
+    BezierCrv.cpp
+    BezierSurf.cpp
 )
 
 caribou_add_python_module(Geometry
