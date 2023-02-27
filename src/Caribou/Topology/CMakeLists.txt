@@ -12,6 +12,7 @@ set(HEADER_FILES
     Grid/Internal/BaseUnidimensionalGrid.h
     HashGrid.h
     Mesh.h
+    IO/CoreNURBS.h
 )
 
 set(TARGET_TYPE "INTERFACE")
