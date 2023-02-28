@@ -12,6 +12,8 @@
 
 #include <Eigen/Core>
 
+#include <Caribou/Topology/IO/IGACellType.h>
+
 namespace caribou::topology::io {
 
 template<typename dtype>
@@ -24,6 +26,7 @@ using Double_Vector = Vector<double>;
 using Int_Vector = Vector<int>;
 using Double_Matrix = Matrix<double>;
 using Int_Matrix = Matrix<int>;
+using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
 
 /*
 INPUT  :: Accepts a vector
@@ -59,18 +62,18 @@ auto num_elements(const Double_Vector & knot_vector) -> int{
 
 class para_topo{
     public:
-        using RangeMatrix = Matrix<double>;
-        using ConnectMatrix = Matrix<double>;
-        para_topo(const RangeMatrix & elrange, const ConnectMatrix & connect){
-            // elrange.resize(range.rows(), range.cols());
-            p_elrange = std::move(elrange);
-            // connect.resize(conn.rows(), conn.cols());
-            p_connect = std::move(connect); // Element connectivity
+//        using RangeMatrix = Matrix<double>;
+//        using ConnectMatrix = Matrix<int>;
+        para_topo(const Double_Matrix & elrange, const USInt_Matrix & connect){
+            p_elrange.resize(elrange.rows(), elrange.cols());
+            p_elrange = elrange;
+            p_connect.resize(connect.rows(), connect.cols());
+            p_connect = connect; // Element connectivity
         }
 
-        RangeMatrix get_elrange() const{ return p_elrange;}
+        Double_Matrix get_elrange() const{ return p_elrange;}
 
-        Matrix<int> get_elconn() const { return p_connect;}
+        USInt_Matrix get_elconn() const { return p_connect;}
 
         void display(void)
         {
@@ -78,14 +81,14 @@ class para_topo{
             std::cout << "Connectivity matrix\n" << p_connect;
         }
     private:
-        RangeMatrix p_elrange; // Element wise knot range. Each row having element [U1, V1, U2, V2].
-        ConnectMatrix p_connect; // Element wise connectivity.
+        Double_Matrix p_elrange; // Element wise knot range. Each row having element [U1, V1, U2, V2].
+        USInt_Matrix p_connect; // Element wise connectivity.
 };
 
 para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p){
     Double_Matrix elRange(no_elems, 2);
     Int_Matrix elKnotIndices(no_elems, 2);
-    Int_Matrix elConn(no_elems, p+1);
+    USInt_Matrix elConn(no_elems, p+1);
 
     int elem;
     elem = 0;
@@ -229,11 +232,15 @@ Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B) {
 struct coreNurbs{
 
 public:
-    void set_filename(std::string & filename){
+    void SetFileName(const std::string & filename){
         p_filename = filename;
     };
 
-    void update(void){
+    void SetFileName(const char * filename){
+        p_filename = filename;
+    };
+
+    void Update(void){
         std::ifstream file;
         file.open(p_filename, std::ios::in);
         std::string s;
@@ -286,9 +293,9 @@ public:
         para_topo topo_v = gen_topo(knot_v, nelems_v, q);
 
         Double_Matrix elrange_u = topo_u.get_elrange();
-        Int_Matrix elconn_u = topo_u.get_elconn();
+        USInt_Matrix elconn_u = topo_u.get_elconn();
         Double_Matrix elrange_v = topo_v.get_elrange();
-        Int_Matrix elconn_v = topo_v.get_elconn();
+        USInt_Matrix elconn_v = topo_v.get_elconn();
 
         elRange.resize(t_nelems, 4);
         elConn.resize(t_nelems, (p+1)*(q+1));
@@ -313,7 +320,7 @@ public:
         C1 = extraction(q, nelems_v, knot_v);
     }
 
-    Double_Matrix get_extraction(const int& elem_index){
+    Double_Matrix GetExtraction(const int& elem_index){
         if (elem_index > t_nelems)
             throw std::invalid_argument("Element index shouldn't exceed total number of elements");
 
@@ -322,19 +329,25 @@ public:
         return kron(C2[index_v], C1[index_u]);
     }
 
-    int get_p(void) const {return p;};                      // Degree p
-    int get_q(void) const {return q;};                      // Degree q
-    int get_no_pnts_u(void) const {return cp_u;};           // Control points u
-    int get_no_pnts_v(void) const {return cp_v;};           // Control points v
-    int get_no_elems_u(void) const {return nelems_u;};      // Number of elements u
-    int get_no_elems_v(void) const {return nelems_v;};      // Number of elements v
-    int get_no_elems(void) const {return t_nelems;};        // Total no of elements
-    Double_Vector get_knot_u(void) const {return knot_u;};       // Knot vector u
-    Double_Vector get_knot_v(void) const {return knot_v;};       // Knot vector v
-    Double_Matrix get_control_points() const {return pnts;};     // Control points
-    Double_Vector get_weights(void) const {return wgts;};        // Weights
-    Double_Matrix get_el_range(void) const {return elRange;};    // Element parametric range
-    Int_Matrix get_el_connect(void) const {return elConn;};      // Element connectivity
+    IGACellType GetCellType(void) const {return BezierSurf;};
+    int GetExtractionSize(void) const {return (p+1)*(q+1);};
+    int GetP(void) const {return p;};                                  // Degree p
+    int GetQ(void) const {return q;};                                  // Degree q
+    int GetNumberOfElementPoints(void) const {return (p+1)*(q+1);};    // Number of nodes per cell
+    int get_no_pnts_u(void) const {return cp_u;};                      // Control points u
+    int get_no_pnts_v(void) const {return cp_v;};                      // Control points v
+    int GetNumberOfPoints(void) const {return t_cp;};
+    int get_no_elems_u(void) const {return nelems_u;};                 // Number of elements u
+    int get_no_elems_v(void) const {return nelems_v;};                 // Number of elements v
+    int GetNumberOfElements(void) const {return t_nelems;};            // Total no of elements
+    Double_Vector get_knot_u(void) const {return knot_u;};             // Knot vector u
+    Double_Vector get_knot_v(void) const {return knot_v;};             // Knot vector v
+    Double_Matrix GetPoints() const {return pnts;};                    // Control points
+    Double_Matrix GetPoint(const UNSIGNED_INTEGER_TYPE & i) const {return pnts.row(i);};     // Control points
+    Double_Vector GetWeights(void) const {return wgts;};               // Weights
+//    FLOATING_POINT_TYPE GetWeight(const UNSIGNED_INTEGER_TYPE & i)
+    Double_Matrix GetKnotRanges(void) const {return elRange;};          // Element parametric range
+    USInt_Matrix GetIndices(void) const {return elConn;};                 // Element connectivity
 
 private:
     std::string p_filename;
@@ -345,8 +358,8 @@ private:
     Double_Vector wgts;
     Int_Matrix global_indices;
     Double_Matrix elRange;
-    Int_Matrix elConn;
+    USInt_Matrix elConn;
     std::vector<Double_Matrix> C1, C2;
 };
 
-} /// namespace caribou::topology::io
+} /// namespace caribou::topology::io::nurbs

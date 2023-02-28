@@ -119,6 +119,13 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
     >
     class SplineMesh : public BaseSplineMesh {
     public:
+
+        //
+        using ElementsIndices = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+        using ElementsKnotrange = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+        using ElementsExtraction = std::vector<ElementsKnotrange>;
+
+
         /**
          * Holder type that contains the nodes of the Splinemesh
          */
@@ -141,7 +148,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
         /*!
          * Default constructor for an empty mesh.
          */
-        SplineMesh() : p_nodes {}, p_domains {}, p_weights {} {}
+        SplineMesh() : p_nodes {}, p_weights {}, p_domains {} {}
 
         /*!
          * Virtual default destructor
@@ -172,6 +179,24 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             }
         }
 
+        explicit SplineMesh(const std::vector<WorldCoordinates> & positions, const WeightsContainer & weights)
+        {
+            const auto n = positions.size();
+            const auto n_weights = weights.size();
+            if (n != n_weights){
+                throw("Number of nodes should match with number of weights");
+            }
+            p_nodes.resize(n);
+            p_weights.resize(n);
+            for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
+                auto node = this->p_nodes.node(i);
+                p_weights(i) = weights(i);
+                for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
+                    node[j] = positions[i][j];
+                }
+            }
+        }
+
         /**
          * Construct the unstructured mesh with an Eigen matrix containing the position vector
          * (NxD with N nodes of D world dimension).
@@ -179,7 +204,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          * @param positions A reference to a NxD matrix containing the position vector
          */
         template <typename Derived>
-        explicit SplineMesh(const Eigen::MatrixBase<Derived> & positions, WeightsContainer weights)
+        explicit SplineMesh(const Eigen::MatrixBase<Derived> & positions, const WeightsContainer & weights)
         {
             static_assert(
                 Eigen::MatrixBase<Derived>::ColsAtCompileTime == Dimension or Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic,
@@ -344,6 +369,26 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
 
             return nullptr;
         }
+
+// ========================== IGA Specialization ==============================
+        template<typename Element, typename NodeIndex>
+        inline
+        typename std::enable_if_t<std::is_integral_v<NodeIndex>, SplineDomain<Element, NodeIndex> *>
+        add_domain(const std::string & name, const ElementsIndices & indices, const ElementsKnotrange & knot_range, const ElementsExtraction & extractions) {
+            static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
+            for (const auto & d : p_domains) {
+                if (d.first == name) {
+                    throw std::domain_error(std::string("A domain with the name ") + name + " already exists.");
+                }
+            }
+
+            auto domain_ptr = new SplineDomain<Element, NodeIndex>(this, indices, knot_range, extractions);
+            add_domain(domain_ptr, name);
+
+            return domain_ptr;
+        }
+// ========================== IGA Specialization ==============================
+
 
         /*!
          * Adds a domain with the Element type supplied as a template parameter.
@@ -692,6 +737,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             using std::swap;
 
             swap(first.p_nodes, second.p_nodes);
+            swap(first.p_weights, second.p_weights);
             swap(first.p_domains, second.p_domains);
         }
 
