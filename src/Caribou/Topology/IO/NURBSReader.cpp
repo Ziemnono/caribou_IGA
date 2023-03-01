@@ -27,16 +27,7 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
 NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs * reader, std::array<UNSIGNED_INTEGER_TYPE, Dimension> axes)
-: p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_axes(axes)
-{
-    // Segments
-    register_element_type<geometry::BezierCrv<Dimension>>(BezierCrv);
-
-    if constexpr (Dimension > 1) {
-        // Quads
-        register_element_type<geometry::BezierSurf<Dimension>>(BezierSurf);
-    }
-}
+: p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_axes(axes) { }
 
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
@@ -47,7 +38,7 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
     }
 
     // Get all data from the file
-    coreNurbs * reader;
+    coreNurbs * reader = nullptr;
     reader->SetFileName(filepath);
     reader->Update();
 
@@ -58,11 +49,11 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
 }
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-auto NURBSReader<Dimension, NodeIndex>::mesh () const -> SplineMesh<Dimension> {
-    using WorldCoordinates = typename SplineMesh<Dimension>::WorldCoordinates;
-    using WeightContainer = typename SplineMesh<Dimension>::WeightsContainer;
+auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension> {
+    using WorldCoordinates = typename SplinePatch<Dimension>::WorldCoordinates;
+    using WeightContainer = typename SplinePatch<Dimension>::WeightsContainer;
 
-    SplineMesh<Dimension> m;
+    SplinePatch<Dimension> m;
     const auto number_of_nodes = p_reader->GetNumberOfPoints();
     if (number_of_nodes == 0) {
         return m;
@@ -83,10 +74,7 @@ auto NURBSReader<Dimension, NodeIndex>::mesh () const -> SplineMesh<Dimension> {
     // Import Weights
     WeightContainer weights = p_reader->GetWeights();
 
-    m = SplineMesh<Dimension> (nodes, weights);
-
     // Import elements
-    const auto type = p_reader->GetCellType();
     const auto number_of_elements = p_reader->GetNumberOfElements(); // Total Number of elements
 
     const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
@@ -109,57 +97,10 @@ auto NURBSReader<Dimension, NodeIndex>::mesh () const -> SplineMesh<Dimension> {
         element_extractions[i] = p_reader->GetExtraction(i);
     }
 
-
-//    const auto & domain_builder = p_domain_builders.at(static_cast<IGACellType>(type));
-//    domain_builder(m, indices, knot_ranges, element_extractions);
-    std::string name = "domain_bzr";
-    m.template add_domain<geometry::BezierSurf<Dimension>, NodeIndex>(name, indices, knot_ranges, element_extractions);
+    m = SplinePatch<Dimension> (nodes, weights, indices, knot_ranges, element_extractions);
 
     return m;
 }
-
-
-//template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-//void NURBSReader<Dimension, NodeIndex>::print (std::ostream & out) const {
-//    vtkUnstructuredGrid * output = p_reader->GetOutput();
-
-//    out << "input has " << output->GetNumberOfPoints() << " points.\n";
-//    out << "input has " << output->GetNumberOfCells() << " cells.\n";
-
-//    vtkSmartPointer <vtkCellTypes> types = vtkSmartPointer <vtkCellTypes>::New();
-//    output->GetCellTypes(types);
-//    out << types->GetNumberOfTypes() << " types\n";
-//    for (unsigned int i = 0; i < types->GetNumberOfTypes(); ++i) {
-//        const auto type = types->GetCellType(i);
-//        auto cells = vtkSmartPointer <vtkIdTypeArray>::New();
-//        output->GetIdsOfCellsOfType(type, cells);
-//        out << vtkCellTypes::GetClassNameFromTypeId(type) << " : " << cells->GetDataSize() << "\n";
-//    }
-
-//    vtkIdType numberOfCellArrays = output->GetCellData()->GetNumberOfArrays();
-//    if (numberOfCellArrays > 0) {
-//        out << "Cell data arrays:\n";
-//        for (vtkIdType i = 0; i < numberOfCellArrays; i++) {
-//            const auto dataTypeID = output->GetCellData()->GetArray(i)->GetDataType();
-//            const auto dataTypeIDStr = output->GetCellData()->GetArray(i)->GetDataTypeAsString();
-//            out << "  Array " << i << ": "
-//                << output->GetCellData()->GetArrayName(i)
-//                << "  (type: " << dataTypeIDStr << " - " << dataTypeID << ")\n";
-//        }
-//    }
-
-//    vtkIdType numberOfFieldArrays = output->GetFieldData()->GetNumberOfArrays();
-//    if (numberOfFieldArrays) {
-//        out << "Field data arrays:\n";
-//        for (vtkIdType i = 0; i < numberOfFieldArrays; i++) {
-//            const auto dataTypeID = output->GetFieldData()->GetArray(i)->GetDataType();
-//            const auto dataTypeIDStr = output->GetFieldData()->GetArray(i)->GetDataTypeAsString();
-//            out << "  Array " << i << ": "
-//                << output->GetFieldData()->GetArrayName(i)
-//                << "  (type: " << dataTypeIDStr << " - " << dataTypeID << ")\n";
-//        }
-//    }
-//}
 
 /**
  * Extract the axes from an array of 3D coordinates.
@@ -196,11 +137,11 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
       axes[1] = 1;
       axes[2] = 2;
     } else {
-        auto v = input_points.row(0);
+        auto w = input_points.row(0);
         std::bitset<3> is_all_the_same(0b111); // Set all to '1' at first
-        std::array<double, 3> last_value {v[0], v[1], v[2]};
+        std::array<double, 3> last_value {w[0], w[1], w[2]};
         for (size_t i = 1; i < number_of_points; ++i) {
-            v = input_points.row(i);
+            auto v = input_points.row(i);
             for (std::size_t axis = 0; axis < 3; ++axis) {
                 if (last_value[axis] != v[axis])
                     is_all_the_same[axis] = false;
@@ -230,11 +171,11 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
 //template class NURBSReader<1, unsigned long int>;
 //template class NURBSReader<1, unsigned int>;
 
-//template class NURBSReader<2, unsigned long long int>;
-//template class NURBSReader<2, unsigned long int>;
+template class NURBSReader<2, unsigned long long int>;
+template class NURBSReader<2, unsigned long int>;
 template class NURBSReader<2, unsigned int>;
 
-//template class NURBSReader<3, unsigned long long int>;
-//template class NURBSReader<3, unsigned long int>;
+template class NURBSReader<3, unsigned long long int>;
+template class NURBSReader<3, unsigned long int>;
 template class NURBSReader<3, unsigned int>;
 }

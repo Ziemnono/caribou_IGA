@@ -137,24 +137,6 @@ struct EigenSplineNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRo
             }
         }
 
-        explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const WeightsContainer & weights)
-        {
-            const auto n = positions.size();
-            const auto n_weights = weights.size();
-            if (n != n_weights){
-                throw("Number of nodes should match with number of weights");
-            }
-            p_nodes.resize(n);
-            p_weights.resize(n);
-            for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
-                auto node = this->p_nodes.node(i);
-                p_weights(i) = weights(i);
-                for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
-                    node[j] = positions[i][j];
-                }
-            }
-        }
-
         /**
          * Construct the unstructured mesh with an Eigen matrix containing the position vector
          * (NxD with N nodes of D world dimension).
@@ -283,12 +265,12 @@ struct EigenSplineNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRo
         }
 
         [[nodiscard]]
-        inline auto number_of_nodes_per_elements() const -> UNSIGNED_INTEGER_TYPE {
-                return p_buffer.cols();
+        inline auto number_of_nodes_per_elements() const -> UNSIGNED_INTEGER_TYPE final {
+                return geometry::traits<Element>::NumberOfNodesAtCompileTime;
         }
 
         [[nodiscard]]
-        inline auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE {
+        inline auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE final {
             return p_buffer.rows();
         }
 

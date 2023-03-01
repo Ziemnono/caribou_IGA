@@ -13,6 +13,7 @@ set(HEADER_FILES
     HashGrid.h
     Mesh.h
     IO/CoreNURBS.h
+    IO/IGACellType.h
     BaseSplinePatch.h
     SplinePatch.h
 )
@@ -25,6 +26,8 @@ if (CARIBOU_WITH_VTK)
     set(TARGET_VISIBILITY "PUBLIC")
     list(APPEND HEADER_FILES IO/VTKReader.h)
     list(APPEND SOURCE_FILES IO/VTKReader.cpp)
+    list(APPEND HEADER_FILES IO/NURBSReader.h)
+    list(APPEND SOURCE_FILES IO/NURBSReader.cpp)
     if (VTK_VERSION VERSION_LESS "8.90.0")
         # old system
         include(${VTK_USE_FILE})
