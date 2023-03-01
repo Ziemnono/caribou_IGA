@@ -13,6 +13,8 @@ set(HEADER_FILES
     HashGrid.h
     Mesh.h
     IO/CoreNURBS.h
+    BaseSplinePatch.h
+    SplinePatch.h
 )
 
 set(TARGET_TYPE "INTERFACE")
