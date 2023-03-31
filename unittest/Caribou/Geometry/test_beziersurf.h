@@ -55,9 +55,7 @@ TEST(BezierSurf, Quadratic) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto J =  beziersurf.jacobian(x);
-            std::cout << "Jacobian :\n" << J << "\n";
             JJ = beziersurf.nodes().transpose() *beziersurf.dL(x);
-            std::cout << "Jacob live \n " << JJ << "\n";
             const auto detJ = J.norm();
             numerical_solution += p1(beziersurf.world_coordinates(x)) * w * detJ;
         }
