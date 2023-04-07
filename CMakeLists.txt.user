@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 8.0.1, 2023-03-01T13:01:41. -->
+<!-- Written by QtCreator 8.0.1, 2023-04-06T22:07:30. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -70,6 +70,11 @@
    <valuemap type="QVariantMap" key="AutoTest.CheckStates">
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Mechanics">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Strain">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:BezierExtraction">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:ControlPonits">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:CoreNURBS">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:ElementIndices">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:Weights">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:BarycentricContainer">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:_2D">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_domain.cpp:Domain">Checked</value>
