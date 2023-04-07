@@ -12,7 +12,7 @@
 
 #include <Eigen/Core>
 
-#include <Caribou/Topology/IO/IGACellType.h>
+//#include <Caribou/Topology/IO/IGACellType.h>
 
 namespace caribou::topology::io {
 
@@ -28,38 +28,8 @@ using Double_Matrix = Matrix<double>;
 using Int_Matrix = Matrix<int>;
 using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
 
-/*
-INPUT  :: Accepts a vector
-OUTPUT :: Number of non-zero values in the input vector.
-*/
-auto no_nonzeros(const Double_Vector & vect) -> int {
-    int count = 0;
-
-    for (size_t i = 0; i<vect.cols(); i++)
-    {
-        if (vect[i] == 0.0){continue;}
-        count = count + 1;
-    }
-    return count;
-}
-
-/*
-INPUT  :: Accepts a vector (knot vector).
-OUTPUT :: Number of possible elements from the vector.
-*/
-auto num_elements(const Double_Vector & knot_vector) -> int{
-    int n_elems = 0; // Number of elements
-    for (size_t i = 1; i < knot_vector.cols(); i++)
-    {
-        if (knot_vector[i-1] != knot_vector[i]){
-            n_elems = n_elems+1;
-        }
-    }
-    return n_elems;
-}
 
 // NURBS topology storage
-
 class para_topo{
     public:
 //        using RangeMatrix = Matrix<double>;
@@ -84,149 +54,6 @@ class para_topo{
         Double_Matrix p_elrange; // Element wise knot range. Each row having element [U1, V1, U2, V2].
         USInt_Matrix p_connect; // Element wise connectivity.
 };
-
-para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p){
-    Double_Matrix elRange(no_elems, 2);
-    Int_Matrix elKnotIndices(no_elems, 2);
-    USInt_Matrix elConn(no_elems, p+1);
-
-    int elem;
-    elem = 0;
-    float currentKnotVal, previousKnotVal;
-    previousKnotVal = 0.0;
-
-    for (int i = 0; i < knotVec.cols(); i++)
-    {
-        currentKnotVal = knotVec(i);
-        if (knotVec(i) != previousKnotVal){
-            elRange.row(elem) << previousKnotVal, currentKnotVal;
-            elKnotIndices.row(elem) << i-1, i;
-            elem = elem + 1;
-        }
-        previousKnotVal = currentKnotVal;
-    }
-
-    int numRepeatedKnots  = 0;
-
-    Double_Vector previousKnotVals(p), currentKnotVals(p);
-    Int_Vector indices(p);
-    Double_Vector ones = Double_Vector::Constant(p, 1.0);
-
-    for (int e = 0; e < no_elems; e++)
-    {
-        for (size_t j = 0; j < p; j++)
-        {
-            indices(j) = elKnotIndices(e,0)-p+1+j;
-        }
-
-        for (size_t j = 0; j < p; j++)
-        {
-            previousKnotVals(j) = knotVec(indices(j));
-            currentKnotVals(j) = knotVec(elKnotIndices(e,0));
-        }
-
-        if ((previousKnotVals == currentKnotVals) && (1 < no_nonzeros(previousKnotVals))){
-            numRepeatedKnots = numRepeatedKnots + 1;
-        }
-        for (int j = 0; j <= p; j++)
-        {
-            elConn(e,j) = elKnotIndices(e,0)-p+j;
-        }
-
-    }
-
-    para_topo topo(elRange, elConn);
-    return topo;
-}
-
-// Extraction operation
-auto extraction(const int& p, const int& num_elems, const Double_Vector & knot){
-    int knot_len = knot.cols();
-    float nume, alpha;
-    int i, j, r, s, k, save, mult, diff;
-    int m = knot_len-p-1;
-    // int num_elems = std::set<Scalar>(knot.array().data(), knot.array().data()+knot.array().size()).size() - 1;
-    int a = p+1;
-    int b = a+1;
-    int nb = 0;
-    std::vector<Double_Matrix> C(num_elems);
-    Double_Matrix ones = Double_Matrix::Identity(p+1, p+1);
-    C[0] = ones;
-    Double_Vector alphas(p+1);
-    while (b <= m) {
-        C[nb+1] = ones;
-        i = b;
-        while ((b <= m) && (knot[b] == knot[b-1])) { b = b+1; }
-        mult = b - i + 1;
-        if (mult < p){
-            nume = knot[b-1] - knot[a-1];
-            for (j = p; j > mult; j--) {
-                alphas[j-mult] = nume/(knot[a+j-1]-knot[a-1]);
-            }
-            r = p-mult;
-            for (j = 1; j < r+1; ++j) {
-                save = r-j+1;
-                s = mult + j;
-                for (k = p+1; k > s; k--) {
-                    alpha = alphas[k-s];
-                    C[nb].col(k-1) = alpha * C[nb].col(k-1) + (1 - alpha) * C[nb].col(k-2);
-                }
-                if (b <= m) {
-                    // C[nb+1](Eigen::seq(save-1, save+j-1), save-1) = C[nb](Eigen::seq(p-j, p), p);
-                    // instead of using "Eiigen::seq" function below loop is used.
-                    for (int itr = 0; itr <= j; itr++){
-                        C[nb+1](save-1+itr, save-1) = C[nb](p-j+itr, p);
-                    }
-                }
-            }
-            nb = nb+1;
-            if (b<= m){
-                a = b;
-                b = b+1;
-            }
-        }
-        else if (mult == p){
-            if (b <= m){
-                nb = nb+1;
-                a = b;
-                b = b + 1;
-            }
-        }
-    }
-    return C;
-}
-
-// Matrix Tensor Product
-Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B) {
-    /*
-    a = []; b = []
-
-    a11 * b   a12 * b . . .
-
-    a21 * b   a22 * b . . .
-    .            .    .
-    .            .      .
-    .            .        .
-
-    */
-    const int Ar = A.rows();
-    const int Ac = A.cols();
-    const int Br = B.rows();
-    const int Bc = B.cols();
-
-    Double_Matrix M(Ar*Br, Ar*Br);
-
-    for (size_t k = 0; k < Ar; k++){
-        for (size_t l = 0; l < Ac; l++){
-            for (size_t i = 0; i < Br; i++){
-                for (size_t j = 0; j < Bc; j++){
-                    // std::cout << i + k*Br << "-" << j + l * Bc << "\n";
-                    M(i + k*Br, j + l * Bc) = B(i,j) * A(k,l);
-    }}}}
-    return M;
-}
-
-
 
 
 struct coreNurbs{
@@ -262,9 +89,9 @@ public:
         knot_u.resize(len_knot_u);
         knot_v.resize(len_knot_v);
         // Writing knot_U data.
-        for (size_t i = 0; i < len_knot_u; i++){ file >> knot_u(i); }
+        for (int i = 0; i < len_knot_u; i++){ file >> knot_u(i); }
         // Writing knot_v data.
-        for (size_t i = 0; i < len_knot_v; i++){ file >> knot_v(i); }
+        for (int i = 0; i < len_knot_v; i++){ file >> knot_v(i); }
 
         // Control point information
         t_cp = cp_u*cp_v; // Total control points.
@@ -272,11 +99,11 @@ public:
         wgts.resize(t_cp); // Weights array.
 
         // Points
-        for (size_t j = 0; j < 2; j++){
-            for (size_t i = 0; i < t_cp; i++){ file >> pnts(i,j); }
+        for (int j = 0; j < 2; j++){
+            for (int i = 0; i < t_cp; i++){ file >> pnts(i,j); }
         }
         // Weights
-        for (size_t i = 0; i < t_cp; i++){ file >> wgts(i); }
+        for (int i = 0; i < t_cp; i++){ file >> wgts(i); }
 
         // elements
         nelems_u = num_elements(knot_u); // u elements
@@ -300,12 +127,12 @@ public:
         elRange.resize(t_nelems, 4);
         elConn.resize(t_nelems, (p+1)*(q+1));
         int e = 0, c;
-        for (size_t v = 0; v < nelems_v; v++){
-            for (size_t u = 0; u < nelems_u; u++){
+        for (int v = 0; v < nelems_v; v++){
+            for (int u = 0; u < nelems_u; u++){
                 elRange.row(e) << elrange_u(u,0), elrange_v(v,0), elrange_u(u,1), elrange_v(v,1);
                 c = 0;
-                for (size_t i = 0; i < q+1; i++){
-                    for (size_t j = 0; j < p+1; j++){
+                for (int i = 0; i < q+1; i++){
+                    for (int j = 0; j < p+1; j++){
                         elConn(e,c) = global_indices(elconn_v(v,i), elconn_u(u,j));
                         c = c + 1;
                     }
@@ -317,7 +144,7 @@ public:
 
     void init_extraction(void){
         C1 = extraction(p, nelems_u, knot_u);
-        C1 = extraction(q, nelems_v, knot_v);
+        C2 = extraction(q, nelems_v, knot_v);
     }
 
     Double_Matrix GetExtraction(const int& elem_index){
@@ -329,7 +156,7 @@ public:
         return kron(C2[index_v], C1[index_u]);
     }
 
-    IGACellType GetCellType(void) const {return BezierSurf;};
+//    IGACellType GetCellType(void) const {return BezierSurf;};
     int GetExtractionSize(void) const {return (p+1)*(q+1);};
     int GetP(void) const {return p;};                                  // Degree p
     int GetQ(void) const {return q;};                                  // Degree q
@@ -360,6 +187,186 @@ private:
     Double_Matrix elRange;
     USInt_Matrix elConn;
     std::vector<Double_Matrix> C1, C2;
+    auto no_nonzeros(const Double_Vector & vect) -> int;
+    auto num_elements(const Double_Vector & knot_vector) -> int;
+    para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p);
+    std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot);
+    Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B);
+
 };
+
+/*
+INPUT  :: Accepts a vector
+OUTPUT :: Number of non-zero values in the input vector.
+*/
+auto coreNurbs::no_nonzeros(const Double_Vector & vect) -> int {
+    int count = 0;
+
+    for (size_t i = 0; i< static_cast<size_t>(vect.cols()); i++)
+    {
+        if (vect[i] == 0.0){continue;}
+        count = count + 1;
+    }
+    return count;
+}
+
+/*
+INPUT  :: Accepts a vector (knot vector).
+OUTPUT :: Number of possible elements from the vector.
+*/
+auto coreNurbs::num_elements(const Double_Vector & knot_vector) -> int{
+    int n_elems = 0; // Number of elements
+    for (size_t i = 1; i < static_cast<size_t>(knot_vector.cols()); i++)
+    {
+        if (knot_vector[i-1] != knot_vector[i]){
+            n_elems = n_elems+1;
+        }
+    }
+    return n_elems;
+}
+
+para_topo coreNurbs::gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & util_p){
+    Double_Matrix util_elRange(no_elems, 2);
+    Int_Matrix util_elKnotIndices(no_elems, 2);
+    USInt_Matrix util_elConn(no_elems, p+1);
+
+    int elem;
+    elem = 0;
+    float currentKnotVal, previousKnotVal;
+    previousKnotVal = 0.0;
+
+    for (int i = 0; i < knotVec.cols(); i++)
+    {
+        currentKnotVal = knotVec(i);
+        if (knotVec(i) != previousKnotVal){
+            util_elRange.row(elem) << previousKnotVal, currentKnotVal;
+            util_elKnotIndices.row(elem) << i-1, i;
+            elem = elem + 1;
+        }
+        previousKnotVal = currentKnotVal;
+    }
+
+    int numRepeatedKnots  = 0;
+
+    Double_Vector previousKnotVals(util_p), currentKnotVals(util_p);
+    Int_Vector indices(util_p);
+    Double_Vector ones = Double_Vector::Constant(util_p, 1.0);
+
+    for (int e = 0; e < no_elems; e++)
+    {
+        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
+        {
+            indices(j) = util_elKnotIndices(e,0)-util_p+1+j;
+        }
+
+        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
+        {
+            previousKnotVals(j) = knotVec(indices(j));
+            currentKnotVals(j) = knotVec(util_elKnotIndices(e,0));
+        }
+
+        if ((previousKnotVals == currentKnotVals) && (1 < no_nonzeros(previousKnotVals))){
+            numRepeatedKnots = numRepeatedKnots + 1;
+        }
+        for (int j = 0; j <= util_p; j++)
+        {
+            util_elConn(e,j) = util_elKnotIndices(e,0)-util_p+j;
+        }
+
+    }
+
+    para_topo topo(util_elRange, util_elConn);
+    return topo;
+}
+
+
+// Extraction operation
+std::vector<Double_Matrix> coreNurbs::extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot){
+    int knot_len = knot.cols();
+    float nume, alpha;
+    int i, j, r, s, k, save, mult;
+    int m = knot_len-utils_p-1;
+    // int num_elems = std::set<Scalar>(knot.array().data(), knot.array().data()+knot.array().size()).size() - 1;
+    int a = utils_p+1;
+    int b = a+1;
+    int nb = 0;
+    std::vector<Double_Matrix> C(num_elems);
+    Double_Matrix ones = Double_Matrix::Identity(utils_p+1, utils_p+1);
+    C[0] = ones;
+    Double_Vector alphas(utils_p+1);
+    while (b <= m) {
+        C[nb+1] = ones;
+        i = b;
+        while ((b <= m) && (knot[b] == knot[b-1])) { b = b+1; }
+        mult = b - i + 1;
+        if (mult < utils_p){
+            nume = knot[b-1] - knot[a-1];
+            for (j = utils_p; j > mult; j--) {
+                alphas[j-mult] = nume/(knot[a+j-1]-knot[a-1]);
+            }
+            r = utils_p-mult;
+            for (j = 1; j < r+1; ++j) {
+                save = r-j+1;
+                s = mult + j;
+                for (k = utils_p+1; k > s; k--) {
+                    alpha = alphas[k-s];
+                    C[nb].col(k-1) = alpha * C[nb].col(k-1) + (1 - alpha) * C[nb].col(k-2);
+                }
+                if (b <= m) {
+                    // C[nb+1](Eigen::seq(save-1, save+j-1), save-1) = C[nb](Eigen::seq(p-j, p), p);
+                    // instead of using "Eiigen::seq" function below loop is used.
+                    for (int itr = 0; itr <= j; itr++){
+                        C[nb+1](save-1+itr, save-1) = C[nb](utils_p-j+itr, utils_p);
+                    }
+                }
+            }
+            nb = nb+1;
+            if (b<= m){
+                a = b;
+                b = b+1;
+            }
+        }
+        else if (mult == utils_p){
+            if (b <= m){
+                nb = nb+1;
+                a = b;
+                b = b + 1;
+            }
+        }
+    }
+    return C;
+}
+
+// Matrix Tensor Product
+Double_Matrix coreNurbs::kron(const Double_Matrix & A, const Double_Matrix & B) {
+    /*
+    a = []; b = []
+
+    a11 * b   a12 * b . . .
+
+    a21 * b   a22 * b . . .
+    .            .    .
+    .            .      .
+    .            .        .
+
+    */
+    const int Ar = A.rows();
+    const int Ac = A.cols();
+    const int Br = B.rows();
+    const int Bc = B.cols();
+
+    Double_Matrix M(Ar*Br, Ar*Br);
+
+    for (int k = 0; k < Ar; k++){
+        for (int l = 0; l < Ac; l++){
+            for (int i = 0; i < Br; i++){
+                for (int j = 0; j < Bc; j++){
+                    // std::cout << i + k*Br << "-" << j + l * Bc << "\n";
+                    M(i + k*Br, j + l * Bc) = B(i,j) * A(k,l);
+    }}}}
+    return M;
+}
+
+
 
 } /// namespace caribou::topology::io::nurbs
