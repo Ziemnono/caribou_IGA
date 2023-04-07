@@ -78,9 +78,9 @@ public:
         file >> pdim;
         file >> rdim;
 
-        while (getline(file, s)){
-            if (s == "PATCH 1 "){break;} // Skipping the initial file information
-        }
+        getline(file, s);
+        getline(file, s);
+
         // NURBS degrees p and q.
         file >> p;
         file >> q;
@@ -106,8 +106,12 @@ public:
         wgts.resize(t_cp); // Weights array.
 
         // Points
-        for (int j = 0; j < rdim; j++){
-            for (int i = 0; i < t_cp; i++){ file >> pnts(i,j); }
+        for (int j = 0; j < rdim; j++)
+        {
+            for (int i = 0; i < t_cp; i++)
+            {
+                file >> pnts(i,j);
+            }
         }
         // Weights
         for (int i = 0; i < t_cp; i++){ file >> wgts(i); }
@@ -118,6 +122,16 @@ public:
         nelems_u = num_elements(knot_u); // u elements
         nelems_v = num_elements(knot_v); // v elements
         t_nelems = nelems_u * nelems_v; // Total number of elements.
+
+        // Set Global Indices
+        global_indices.resize(cp_v, cp_u);
+        for (int j = 0; j < cp_v; j++){
+            for (int i = 0; i < cp_u; i++){
+                global_indices(j,i) = i + j*cp_u;
+            }
+        }
+
+
         // generate Topology
         init_topo();
         init_extraction();
