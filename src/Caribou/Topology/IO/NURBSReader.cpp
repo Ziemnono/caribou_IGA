@@ -18,7 +18,7 @@ namespace fs = ::std::filesystem;
 
 #include <Caribou/Topology/IO/CoreNURBS.h>
 
-#include <Caribou/Topology/IO/IGACellType.h>
+
 
 namespace caribou::topology::io {
 

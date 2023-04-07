@@ -10,7 +10,7 @@
 #include <Caribou/Topology/SplinePatch.h>
 
 #include <Caribou/Topology/IO/CoreNURBS.h>
-#include <Caribou/Topology/IO/IGACellType.h>
+//#include <Caribou/Topology/IO/IGACellType.h>
 
 namespace caribou::topology::io {
 
