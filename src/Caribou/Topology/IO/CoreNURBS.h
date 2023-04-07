@@ -71,6 +71,13 @@ public:
         std::ifstream file;
         file.open(p_filename, std::ios::in);
         std::string s;
+
+        for (int i = 0; i < 4; ++i) {
+            getline(file, s);
+        }
+        file >> pdim;
+        file >> rdim;
+
         while (getline(file, s)){
             if (s == "PATCH 1 "){break;} // Skipping the initial file information
         }
@@ -95,15 +102,17 @@ public:
 
         // Control point information
         t_cp = cp_u*cp_v; // Total control points.
-        pnts.resize(t_cp, 2); // Control points array.
+        pnts.resize(t_cp, rdim); // Control points array.
         wgts.resize(t_cp); // Weights array.
 
         // Points
-        for (int j = 0; j < 2; j++){
+        for (int j = 0; j < rdim; j++){
             for (int i = 0; i < t_cp; i++){ file >> pnts(i,j); }
         }
         // Weights
         for (int i = 0; i < t_cp; i++){ file >> wgts(i); }
+
+        file.close();
 
         // elements
         nelems_u = num_elements(knot_u); // u elements
@@ -160,6 +169,7 @@ public:
     int GetExtractionSize(void) const {return (p+1)*(q+1);};
     int GetP(void) const {return p;};                                  // Degree p
     int GetQ(void) const {return q;};                                  // Degree q
+    int GetReadDim(void) {return rdim;};                               // Dimensions of control points
     int GetNumberOfElementPoints(void) const {return (p+1)*(q+1);};    // Number of nodes per cell
     int get_no_pnts_u(void) const {return cp_u;};                      // Control points u
     int get_no_pnts_v(void) const {return cp_v;};                      // Control points v
@@ -178,6 +188,7 @@ public:
 
 private:
     std::string p_filename;
+    int pdim, rdim;
     int p, q, cp_u, cp_v, len_knot_u, len_knot_v, t_cp, nelems_u, nelems_v, t_nelems;
     Double_Vector knot_u;
     Double_Vector knot_v;
