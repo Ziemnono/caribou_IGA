@@ -17,6 +17,7 @@ set(SOURCE_FILES
 )
 
 set(MESH_FILES
+    meshes/splines/3D_spline_surface.txt
     meshes/1D_linear.vtk
     meshes/1D_quadratic.vtk
     meshes/2D_quad_linear.vtk
