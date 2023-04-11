@@ -194,9 +194,9 @@ public:
     Double_Vector get_knot_u(void) const {return knot_u;};             // Knot vector u
     Double_Vector get_knot_v(void) const {return knot_v;};             // Knot vector v
     Double_Matrix GetPoints() const {return pnts;};                    // Control points
-    Double_Matrix GetPoint(const UNSIGNED_INTEGER_TYPE & i) const {return pnts.row(i);};     // Control points
+    Double_Vector GetPoint(const UNSIGNED_INTEGER_TYPE & i) const {return pnts.row(i);};     // Control points
     Double_Vector GetWeights(void) const {return wgts;};               // Weights
-//    FLOATING_POINT_TYPE GetWeight(const UNSIGNED_INTEGER_TYPE & i)
+    FLOATING_POINT_TYPE GetWeight(const UNSIGNED_INTEGER_TYPE & i) const {return wgts(i);};
     Double_Matrix GetKnotRanges(void) const {return elRange;};          // Element parametric range
     USInt_Matrix GetIndices(void) const {return elConn;};                 // Element connectivity
 
