@@ -29,6 +29,10 @@ using Int_Matrix = Matrix<int>;
 using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
 
 
+
+
+namespace utils{
+
 // NURBS topology storage
 class para_topo{
     public:
@@ -54,6 +58,180 @@ class para_topo{
         Double_Matrix p_elrange; // Element wise knot range. Each row having element [U1, V1, U2, V2].
         USInt_Matrix p_connect; // Element wise connectivity.
 };
+
+/*
+INPUT  :: Accepts a vector
+OUTPUT :: Number of non-zero values in the input vector.
+*/
+auto no_nonzeros(const Double_Vector & vect) -> int {
+    int count = 0;
+
+    for (size_t i = 0; i< static_cast<size_t>(vect.cols()); i++)
+    {
+        if (vect[i] == 0.0){continue;}
+        count = count + 1;
+    }
+    return count;
+}
+
+/*
+INPUT  :: Accepts a vector (knot vector).
+OUTPUT :: Number of possible elements from the vector.
+*/
+auto num_elements(const Double_Vector & knot_vector) -> int{
+    int n_elems = 0; // Number of elements
+    for (size_t i = 1; i < static_cast<size_t>(knot_vector.cols()); i++)
+    {
+        if (knot_vector[i-1] != knot_vector[i]){
+            n_elems = n_elems+1;
+        }
+    }
+    return n_elems;
+}
+
+para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & util_p){
+    Double_Matrix util_elRange(no_elems, 2);
+    Int_Matrix util_elKnotIndices(no_elems, 2);
+    USInt_Matrix util_elConn(no_elems, util_p+1);
+
+    int elem;
+    elem = 0;
+    float currentKnotVal, previousKnotVal;
+    previousKnotVal = 0.0;
+
+    for (int i = 0; i < knotVec.cols(); i++)
+    {
+        currentKnotVal = knotVec(i);
+        if (knotVec(i) != previousKnotVal){
+            util_elRange.row(elem) << previousKnotVal, currentKnotVal;
+            util_elKnotIndices.row(elem) << i-1, i;
+            elem = elem + 1;
+        }
+        previousKnotVal = currentKnotVal;
+    }
+
+    int numRepeatedKnots  = 0;
+
+    Double_Vector previousKnotVals(util_p), currentKnotVals(util_p);
+    Int_Vector indices(util_p);
+    Double_Vector ones = Double_Vector::Constant(util_p, 1.0);
+
+    for (int e = 0; e < no_elems; e++)
+    {
+        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
+        {
+            indices(j) = util_elKnotIndices(e,0)-util_p+1+j;
+        }
+
+        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
+        {
+            previousKnotVals(j) = knotVec(indices(j));
+            currentKnotVals(j) = knotVec(util_elKnotIndices(e,0));
+        }
+
+        if ((previousKnotVals == currentKnotVals) && (1 < no_nonzeros(previousKnotVals))){
+            numRepeatedKnots = numRepeatedKnots + 1;
+        }
+        for (int j = 0; j <= util_p; j++)
+        {
+            util_elConn(e,j) = util_elKnotIndices(e,0)-util_p+j;
+        }
+
+    }
+
+    para_topo topo(util_elRange, util_elConn);
+    return topo;
+}
+
+
+// Extraction operation
+std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot){
+    int knot_len = knot.cols();
+    float nume, alpha;
+    int i, j, r, s, k, save, mult;
+    int m = knot_len-utils_p-1;
+    // int num_elems = std::set<Scalar>(knot.array().data(), knot.array().data()+knot.array().size()).size() - 1;
+    int a = utils_p+1;
+    int b = a+1;
+    int nb = 0;
+    std::vector<Double_Matrix> C(num_elems);
+    Double_Matrix ones = Double_Matrix::Identity(utils_p+1, utils_p+1);
+    C[0] = ones;
+    Double_Vector alphas(utils_p+1);
+    while (b <= m) {
+        C[nb+1] = ones;
+        i = b;
+        while ((b <= m) && (knot[b] == knot[b-1])) { b = b+1; }
+        mult = b - i + 1;
+        if (mult < utils_p){
+            nume = knot[b-1] - knot[a-1];
+            for (j = utils_p; j > mult; j--) {
+                alphas[j-mult] = nume/(knot[a+j-1]-knot[a-1]);
+            }
+            r = utils_p-mult;
+            for (j = 1; j < r+1; ++j) {
+                save = r-j+1;
+                s = mult + j;
+                for (k = utils_p+1; k > s; k--) {
+                    alpha = alphas[k-s];
+                    C[nb].col(k-1) = alpha * C[nb].col(k-1) + (1 - alpha) * C[nb].col(k-2);
+                }
+                if (b <= m) {
+                    // C[nb+1](Eigen::seq(save-1, save+j-1), save-1) = C[nb](Eigen::seq(p-j, p), p);
+                    // instead of using "Eiigen::seq" function below loop is used.
+                    for (int itr = 0; itr <= j; itr++){
+                        C[nb+1](save-1+itr, save-1) = C[nb](utils_p-j+itr, utils_p);
+                    }
+                }
+            }
+            nb = nb+1;
+            if (b<= m){
+                a = b;
+                b = b+1;
+            }
+        }
+        else if (mult == utils_p){
+            if (b <= m){
+                nb = nb+1;
+                a = b;
+                b = b + 1;
+            }
+        }
+    }
+    return C;
+}
+
+// Matrix Tensor Product
+Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B) {
+    /*
+    a = []; b = []
+
+    a11 * b   a12 * b . . .
+
+    a21 * b   a22 * b . . .
+    .            .    .
+    .            .      .
+    .            .        .
+
+    */
+    const int Ar = A.rows();
+    const int Ac = A.cols();
+    const int Br = B.rows();
+    const int Bc = B.cols();
+
+    Double_Matrix M(Ar*Br, Ar*Br);
+
+    for (int k = 0; k < Ar; k++){
+        for (int l = 0; l < Ac; l++){
+            for (int i = 0; i < Br; i++){
+                for (int j = 0; j < Bc; j++){
+                    // std::cout << i + k*Br << "-" << j + l * Bc << "\n";
+                    M(i + k*Br, j + l * Bc) = B(i,j) * A(k,l);
+    }}}}
+    return M;
+}
+
+}  // Utils namespace
 
 
 struct coreNurbs{
@@ -119,8 +297,8 @@ public:
         file.close();
 
         // elements
-        nelems_u = num_elements(knot_u); // u elements
-        nelems_v = num_elements(knot_v); // v elements
+        nelems_u = utils::num_elements(knot_u); // u elements
+        nelems_v = utils::num_elements(knot_v); // v elements
         t_nelems = nelems_u * nelems_v; // Total number of elements.
 
         // Set Global Indices
@@ -139,8 +317,8 @@ public:
 
     void init_topo(void){
         // Connectivity Generation
-        para_topo topo_u = gen_topo(knot_u, nelems_u, p);
-        para_topo topo_v = gen_topo(knot_v, nelems_v, q);
+        utils::para_topo topo_u = utils::gen_topo(knot_u, nelems_u, p);
+        utils::para_topo topo_v = utils::gen_topo(knot_v, nelems_v, q);
 
         Double_Matrix elrange_u = topo_u.get_elrange();
         USInt_Matrix elconn_u = topo_u.get_elconn();
@@ -166,8 +344,8 @@ public:
     }
 
     void init_extraction(void){
-        C1 = extraction(p, nelems_u, knot_u);
-        C2 = extraction(q, nelems_v, knot_v);
+        C1 = utils::extraction(p, nelems_u, knot_u);
+        C2 = utils::extraction(q, nelems_v, knot_v);
     }
 
     Double_Matrix GetExtraction(const int& elem_index){
@@ -176,7 +354,7 @@ public:
 
         int index_u = elem_index%(p+1);
         int index_v = elem_index/(p+1);
-        return kron(C2[index_v], C1[index_u]);
+        return utils::kron(C2[index_v], C1[index_u]);
     }
 
 //    IGACellType GetCellType(void) const {return BezierSurf;};
@@ -212,186 +390,13 @@ private:
     Double_Matrix elRange;
     USInt_Matrix elConn;
     std::vector<Double_Matrix> C1, C2;
-    auto no_nonzeros(const Double_Vector & vect) -> int;
-    auto num_elements(const Double_Vector & knot_vector) -> int;
-    para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p);
-    std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot);
-    Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B);
+//    auto no_nonzeros(const Double_Vector & vect) -> int;
+//    auto num_elements(const Double_Vector & knot_vector) -> int;
+//    para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p);
+//    std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot);
+//    Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B);
 
 };
-
-/*
-INPUT  :: Accepts a vector
-OUTPUT :: Number of non-zero values in the input vector.
-*/
-auto coreNurbs::no_nonzeros(const Double_Vector & vect) -> int {
-    int count = 0;
-
-    for (size_t i = 0; i< static_cast<size_t>(vect.cols()); i++)
-    {
-        if (vect[i] == 0.0){continue;}
-        count = count + 1;
-    }
-    return count;
-}
-
-/*
-INPUT  :: Accepts a vector (knot vector).
-OUTPUT :: Number of possible elements from the vector.
-*/
-auto coreNurbs::num_elements(const Double_Vector & knot_vector) -> int{
-    int n_elems = 0; // Number of elements
-    for (size_t i = 1; i < static_cast<size_t>(knot_vector.cols()); i++)
-    {
-        if (knot_vector[i-1] != knot_vector[i]){
-            n_elems = n_elems+1;
-        }
-    }
-    return n_elems;
-}
-
-para_topo coreNurbs::gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & util_p){
-    Double_Matrix util_elRange(no_elems, 2);
-    Int_Matrix util_elKnotIndices(no_elems, 2);
-    USInt_Matrix util_elConn(no_elems, p+1);
-
-    int elem;
-    elem = 0;
-    float currentKnotVal, previousKnotVal;
-    previousKnotVal = 0.0;
-
-    for (int i = 0; i < knotVec.cols(); i++)
-    {
-        currentKnotVal = knotVec(i);
-        if (knotVec(i) != previousKnotVal){
-            util_elRange.row(elem) << previousKnotVal, currentKnotVal;
-            util_elKnotIndices.row(elem) << i-1, i;
-            elem = elem + 1;
-        }
-        previousKnotVal = currentKnotVal;
-    }
-
-    int numRepeatedKnots  = 0;
-
-    Double_Vector previousKnotVals(util_p), currentKnotVals(util_p);
-    Int_Vector indices(util_p);
-    Double_Vector ones = Double_Vector::Constant(util_p, 1.0);
-
-    for (int e = 0; e < no_elems; e++)
-    {
-        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
-        {
-            indices(j) = util_elKnotIndices(e,0)-util_p+1+j;
-        }
-
-        for (size_t j = 0; j < static_cast<size_t>(util_p); j++)
-        {
-            previousKnotVals(j) = knotVec(indices(j));
-            currentKnotVals(j) = knotVec(util_elKnotIndices(e,0));
-        }
-
-        if ((previousKnotVals == currentKnotVals) && (1 < no_nonzeros(previousKnotVals))){
-            numRepeatedKnots = numRepeatedKnots + 1;
-        }
-        for (int j = 0; j <= util_p; j++)
-        {
-            util_elConn(e,j) = util_elKnotIndices(e,0)-util_p+j;
-        }
-
-    }
-
-    para_topo topo(util_elRange, util_elConn);
-    return topo;
-}
-
-
-// Extraction operation
-std::vector<Double_Matrix> coreNurbs::extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot){
-    int knot_len = knot.cols();
-    float nume, alpha;
-    int i, j, r, s, k, save, mult;
-    int m = knot_len-utils_p-1;
-    // int num_elems = std::set<Scalar>(knot.array().data(), knot.array().data()+knot.array().size()).size() - 1;
-    int a = utils_p+1;
-    int b = a+1;
-    int nb = 0;
-    std::vector<Double_Matrix> C(num_elems);
-    Double_Matrix ones = Double_Matrix::Identity(utils_p+1, utils_p+1);
-    C[0] = ones;
-    Double_Vector alphas(utils_p+1);
-    while (b <= m) {
-        C[nb+1] = ones;
-        i = b;
-        while ((b <= m) && (knot[b] == knot[b-1])) { b = b+1; }
-        mult = b - i + 1;
-        if (mult < utils_p){
-            nume = knot[b-1] - knot[a-1];
-            for (j = utils_p; j > mult; j--) {
-                alphas[j-mult] = nume/(knot[a+j-1]-knot[a-1]);
-            }
-            r = utils_p-mult;
-            for (j = 1; j < r+1; ++j) {
-                save = r-j+1;
-                s = mult + j;
-                for (k = utils_p+1; k > s; k--) {
-                    alpha = alphas[k-s];
-                    C[nb].col(k-1) = alpha * C[nb].col(k-1) + (1 - alpha) * C[nb].col(k-2);
-                }
-                if (b <= m) {
-                    // C[nb+1](Eigen::seq(save-1, save+j-1), save-1) = C[nb](Eigen::seq(p-j, p), p);
-                    // instead of using "Eiigen::seq" function below loop is used.
-                    for (int itr = 0; itr <= j; itr++){
-                        C[nb+1](save-1+itr, save-1) = C[nb](utils_p-j+itr, utils_p);
-                    }
-                }
-            }
-            nb = nb+1;
-            if (b<= m){
-                a = b;
-                b = b+1;
-            }
-        }
-        else if (mult == utils_p){
-            if (b <= m){
-                nb = nb+1;
-                a = b;
-                b = b + 1;
-            }
-        }
-    }
-    return C;
-}
-
-// Matrix Tensor Product
-Double_Matrix coreNurbs::kron(const Double_Matrix & A, const Double_Matrix & B) {
-    /*
-    a = []; b = []
-
-    a11 * b   a12 * b . . .
-
-    a21 * b   a22 * b . . .
-    .            .    .
-    .            .      .
-    .            .        .
-
-    */
-    const int Ar = A.rows();
-    const int Ac = A.cols();
-    const int Br = B.rows();
-    const int Bc = B.cols();
-
-    Double_Matrix M(Ar*Br, Ar*Br);
-
-    for (int k = 0; k < Ar; k++){
-        for (int l = 0; l < Ac; l++){
-            for (int i = 0; i < Br; i++){
-                for (int j = 0; j < Bc; j++){
-                    // std::cout << i + k*Br << "-" << j + l * Bc << "\n";
-                    M(i + k*Br, j + l * Bc) = B(i,j) * A(k,l);
-    }}}}
-    return M;
-}
-
 
 
 } /// namespace caribou::topology::io::nurbs
