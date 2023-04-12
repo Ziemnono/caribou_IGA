@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef LEGACY_CXX
 #include <experimental/filesystem>
 namespace fs = ::std::experimental::filesystem;
@@ -14,10 +16,6 @@ namespace fs = ::std::filesystem;
 #include <Caribou/constants.h>
 #include <Caribou/Geometry/BezierCrv.h>
 #include <Caribou/Geometry/BezierSurf.h>
-
-
-#include <Caribou/Topology/IO/CoreNURBS.h>
-
 
 
 namespace caribou::topology::io {
@@ -41,7 +39,6 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
     coreNurbs * reader = nullptr;
     reader->SetFileName(filepath);
     reader->Update();
-
     const auto axes = nurbs_extract_axes_from_3D_vectors<Dimension>(reader->GetPoints(), reader->GetNumberOfPoints());
 
 
@@ -62,11 +59,12 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension>
     // Import nodes
     std::vector<WorldCoordinates> nodes;
     nodes.resize(p_reader->GetNumberOfPoints());
+    std::cout << "Number of points " << p_reader->GetNumberOfPoints() << "######\n";
 
 
-    for (size_t i = 0; i < static_cast<size_t>(number_of_nodes); ++i) {
+    for (int i = 0; i < static_cast<int>(number_of_nodes); ++i) {
         auto v = p_reader->GetPoint(i);
-        for (std::size_t axis = 0; axis < Dimension; ++axis) {
+        for (int axis = 0; axis < static_cast<int>(Dimension); ++axis) {
             nodes[i][axis] = v(p_axes[axis]);
         }
     }
@@ -140,9 +138,9 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
         auto w = input_points.row(0);
         std::bitset<3> is_all_the_same(0b111); // Set all to '1' at first
         std::array<double, 3> last_value {w[0], w[1], w[2]};
-        for (size_t i = 1; i < number_of_points; ++i) {
+        for (int i = 1; i < number_of_points; ++i) {
             auto v = input_points.row(i);
-            for (std::size_t axis = 0; axis < 3; ++axis) {
+            for (int axis = 0; axis < 3; ++axis) {
                 if (last_value[axis] != v[axis])
                     is_all_the_same[axis] = false;
             }
@@ -157,7 +155,7 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
         // Flip back
         is_all_the_same.flip();
 
-        for (std::size_t axis = 0, c = 0; axis < 3; ++axis) {
+        for (int axis = 0, c = 0; axis < 3; ++axis) {
             if (not is_all_the_same[axis]) {
                 axes[c++] = axis;
             }

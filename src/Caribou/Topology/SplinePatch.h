@@ -178,17 +178,17 @@ struct EigenSplineNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRo
         explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const WeightsContainer & weights,
                              const ElementsIndices & indices, const ElementsKnotrange & knotrange, const ElementsExtraction & extraction)
         {
-            const auto n = positions.size();
-            const auto n_weights = weights.size();
+            const int n = positions.size();
+            const int n_weights = weights.size();
             if (n != n_weights){
                 throw("Number of nodes should match with number of weights");
             }
             p_nodes.resize(n);
             p_weights.resize(n);
-            for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
+            for (int i = 0; i < n; ++i) {
                 auto node = this->p_nodes.node(i);
                 p_weights(i) = weights(i);
-                for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
+                for (int j = 0; j < static_cast<int>(Dimension); ++j) {
                     node[j] = positions[i][j];
                 }
             }
