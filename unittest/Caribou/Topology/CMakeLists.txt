@@ -12,7 +12,8 @@ set(SOURCE_FILES
     test_barycentric_container.cpp
     test_domain.cpp
     test_mesh.cpp
-    test_CoreNURBS.cpp
+#    test_CoreNURBS.cpp
+    test_NURBSReader.cpp
     main.cpp
 )
 
