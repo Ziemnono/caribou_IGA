@@ -77,17 +77,17 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension>
 
     const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
     // Indices of the elements
-    Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
+    USInt_Matrix indices;
     indices.resize(number_of_elements, number_of_nodes_per_element);
     indices = p_reader->GetIndices();
 
     // Knot range of elements
-    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> knot_ranges;
+    Double_Matrix knot_ranges;
     knot_ranges.resize(number_of_elements, 4);
     knot_ranges = p_reader->GetKnotRanges();
-
+    Double_Matrix a;
     // Extraction matrix
-    using ElementExtraction = std::vector<Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
+    using ElementExtraction = std::vector<Double_Matrix>;
     ElementExtraction element_extractions(number_of_elements);
 //    const auto extraction_size = p_reader->GetExtractionSize();
     for (int i = 0; i < number_of_elements; ++i) {
