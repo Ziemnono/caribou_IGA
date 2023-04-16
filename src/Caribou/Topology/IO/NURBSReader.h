@@ -26,18 +26,22 @@ public:
     // Extraction Matrices storage format.
     using ElementsExtraction = std::vector<Double_Matrix>; //
 
-    /** Build a new NURBSReader instance by reading a vtk file. */
+    /** Build a new NURBSReader instance by reading a txt file. */
     static auto Read(const std::string & filepath) -> NURBSReader;
 
-    /** Print information about the current vtk file. */
+    /** Print information about the current txt file. */
     void print (std::ostream &out) const;
 
-    /** Build the actual unstructured mesh from the vtk file. */
+    /** Build the actual unstructured mesh from the txt file. */
     [[nodiscard]]
     auto patch() const -> PatchType;
 
+    ~NURBSReader(){
+        free(p_reader);
+    }
+
 private:
-    NURBSReader(std::string filepath, coreNurbs * reader, std::array<UNSIGNED_INTEGER_TYPE, Dimension> axes);
+    NURBSReader(std::string filepath, coreNurbs * reader);
 
     const std::string p_filepath;
     coreNurbs * p_reader;

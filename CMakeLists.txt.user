@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 8.0.1, 2023-04-15T16:48:33. -->
+<!-- Written by QtCreator 8.0.1, 2023-04-16T15:42:11. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -70,11 +70,11 @@
    <valuemap type="QVariantMap" key="AutoTest.CheckStates">
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Mechanics">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Strain">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:CoreNURBS">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:para_topo">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:quarter_cylinder">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:reader_knot">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_CoreNURBS.cpp:reader_rectangle">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:NURBSReader">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:SplinePatch">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:knot_test_geo">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:quarter_cyl">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:xy_rectangle">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:BarycentricContainer">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:_2D">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_domain.cpp:Domain">Checked</value>
@@ -86,8 +86,6 @@
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Segment">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Tetrahedron">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Triangle">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_spline_patch.cpp:Splinepatch">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_spline_patch.cpp:XY_RECTANGLE">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:Algebra">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullDDotProduct">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullFDotProduct">Checked</value>

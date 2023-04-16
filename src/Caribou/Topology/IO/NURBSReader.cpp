@@ -24,9 +24,8 @@ template<UNSIGNED_INTEGER_TYPE Dimension>
 auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, const int & number_of_points) -> std::array<UNSIGNED_INTEGER_TYPE, Dimension>;
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs * reader, std::array<UNSIGNED_INTEGER_TYPE, Dimension> axes)
-: p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_axes(axes) { }
-
+NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs * reader)
+: p_filepath(std::move(filepath)), p_reader(std::move(reader)){ }
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
 auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NURBSReader<Dimension, NodeIndex> {
@@ -34,21 +33,20 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
     if (not fs::exists(filepath)) {
         throw std::invalid_argument("File '" + filepath + "' does not exists or cannot be read.");
     }
-
     // Get all data from the file
-    coreNurbs * reader = nullptr;
+    coreNurbs * reader = new coreNurbs();
     reader->SetFileName(filepath);
     reader->Update();
-    const auto axes = nurbs_extract_axes_from_3D_vectors<Dimension>(reader->GetPoints(), reader->GetNumberOfPoints());
-
-
-    return NURBSReader<Dimension, NodeIndex>(filepath, reader, axes);
+//    const auto axes = nurbs_extract_axes_from_3D_vectors<Dimension>(reader->GetPoints(), reader->GetNumberOfPoints());
+    NURBSReader<Dimension, NodeIndex> nr(filepath, reader);
+//    free reader;
+    return nr;
 }
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
 auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension> {
-    using WorldCoordinates = typename SplinePatch<Dimension>::WorldCoordinates;
-    using WeightContainer = typename SplinePatch<Dimension>::WeightsContainer;
+//    using WorldCoordinates = typename SplinePatch<Dimension>::WorldCoordinates;
+//    using WeightContainer = typename SplinePatch<Dimension>::WeightsContainer;
 
     SplinePatch<Dimension> m;
     const auto number_of_nodes = p_reader->GetNumberOfPoints();
@@ -56,21 +54,27 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension>
         return m;
     }
 
-    // Import nodes
-    std::vector<WorldCoordinates> nodes;
-    nodes.resize(p_reader->GetNumberOfPoints());
-    std::cout << "Number of points " << p_reader->GetNumberOfPoints() << "######\n";
+//    // Import nodes
+//    std::vector<WorldCoordinates> nodes;
+//    nodes.resize(p_reader->GetNumberOfPoints());
 
+//    for (int i = 0; i < static_cast<int>(number_of_nodes); ++i) {
+//        auto v = p_reader->GetPoint(i);
+//        for (int axis = 0; axis < static_cast<int>(Dimension); ++axis) {
+//            nodes[i][axis] = v(p_axes[axis]);
+//        }
+//    }
 
-    for (int i = 0; i < static_cast<int>(number_of_nodes); ++i) {
-        auto v = p_reader->GetPoint(i);
-        for (int axis = 0; axis < static_cast<int>(Dimension); ++axis) {
-            nodes[i][axis] = v(p_axes[axis]);
-        }
-    }
+//    for (int i = 0; i < static_cast<int>(number_of_nodes); ++i) {
+//        auto v = p_reader->GetPoint(i);
+//        for (int axis = 0; axis < static_cast<int>(Dimension); ++axis) {
+//            nodes[i][axis] = v(axis);
+//        }
+//    }
 
+    Double_Matrix nodes = p_reader->GetPoints();
     // Import Weights
-    WeightContainer weights = p_reader->GetWeights();
+    Double_Matrix weights = p_reader->GetWeights();
 
     // Import elements
     const auto number_of_elements = p_reader->GetNumberOfElements(); // Total Number of elements
@@ -96,6 +100,7 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> SplinePatch<Dimension>
     }
 
     m = SplinePatch<Dimension> (nodes, weights, indices, knot_ranges, element_extractions);
+//    m = SplinePatch<Dimension> (nodes, weights);
 
     return m;
 }
@@ -137,11 +142,11 @@ auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, cons
     } else {
         auto w = input_points.row(0);
         std::bitset<3> is_all_the_same(0b111); // Set all to '1' at first
-        std::array<double, 3> last_value {w[0], w[1], w[2]};
+        std::array<double, 3> last_value {w(0), w(1), w(2)};
         for (int i = 1; i < number_of_points; ++i) {
             auto v = input_points.row(i);
             for (int axis = 0; axis < 3; ++axis) {
-                if (last_value[axis] != v[axis])
+                if (last_value[axis] != v(axis))
                     is_all_the_same[axis] = false;
             }
         }
