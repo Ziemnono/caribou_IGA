@@ -36,15 +36,19 @@ public:
     [[nodiscard]]
     auto patch() const -> PatchType;
 
-    ~NURBSReader(){
-        free(p_reader);
-    }
+    /** Build the actual unstructured mesh from the txt file. */
+    [[nodiscard]]
+    auto patch_ptr() const -> std::unique_ptr<PatchType>;
+
+//    ~NURBSReader(){
+//        free(p_reader);
+//    }
 
 private:
     NURBSReader(std::string filepath, coreNurbs * reader);
 
     const std::string p_filepath;
-    coreNurbs * p_reader;
+    std::unique_ptr<coreNurbs> p_reader;
     std::array<UNSIGNED_INTEGER_TYPE, Dimension> p_axes;
 };
 

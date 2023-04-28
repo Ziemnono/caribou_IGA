@@ -65,8 +65,10 @@ TEST (Splinepatch, XY_RECTANGLE) {
     EXPECT_EQ(patch.element(0).center()[0], initial_positions(4,0));
 
     EXPECT_MATRIX_EQUAL(patch.element_indices(0), indices);
+    std::cout << "Indices \n " << patch.element_indices(0) << "\n";
 
     EXPECT_MATRIX_EQUAL(patch.element_knotranges(0), knot_ranges.row(0));
+    std::cout << "Knot range \n " << patch.element_knotranges(0) << "\n";
 
     EXPECT_MATRIX_EQUAL(patch.element_extraction(0), ext_mat[0]);
 
@@ -82,6 +84,7 @@ TEST (Splinepatch, XY_RECTANGLE) {
     Double_Vector wgts(2);
     wgts << 0.75, 0.7171;
     EXPECT_MATRIX_EQUAL(patch.weights({4,5}), wgts );
+    std::cout << "Weights \n " << patch.weights({0,1,2,3,4,5,6,7,8}) << "\n";
 
 }
 

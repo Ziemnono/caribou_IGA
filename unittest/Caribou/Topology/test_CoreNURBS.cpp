@@ -139,6 +139,9 @@ TEST(CoreNURBS, quarter_cylinder) {
             0,  0,  0,  0,  0,  0,  0,  1,  0.5,
             0,  0,  0,  0,  0,  0,  0,  0,  0.5;
     EXPECT_MATRIX_EQUAL(nurbs_patch.GetExtraction(0), ext1);
+//    std::cout << "Extraction matrix :: \n" << nurbs_patch.GetExtraction(0) << "\n";
+//    std::cout << "Ele Knot 1 :: \n" << nurbs_patch.GetKnotRanges() << "\n";
+
 
 }
 
