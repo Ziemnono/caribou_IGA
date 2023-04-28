@@ -34,11 +34,12 @@ using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
 namespace utils{
 
 // NURBS topology storage
+template <typename NodeIndex = UNSIGNED_INTEGER_TYPE>
 class para_topo{
     public:
 //        using RangeMatrix = Matrix<double>;
 //        using ConnectMatrix = Matrix<int>;
-        para_topo(const Double_Matrix & elrange, const USInt_Matrix & connect){
+        para_topo(const Double_Matrix & elrange, const Matrix<NodeIndex> & connect){
             p_elrange.resize(elrange.rows(), elrange.cols());
             p_elrange = elrange;
             p_connect.resize(connect.rows(), connect.cols());
@@ -47,7 +48,7 @@ class para_topo{
 
         Double_Matrix get_elrange() const{ return p_elrange;}
 
-        USInt_Matrix get_elconn() const { return p_connect;}
+        Matrix<NodeIndex> get_elconn() const { return p_connect;}
 
         void display(void)
         {
@@ -56,7 +57,7 @@ class para_topo{
         }
     private:
         Double_Matrix p_elrange; // Element wise knot range. Each row having element [U1, V1, U2, V2].
-        USInt_Matrix p_connect; // Element wise connectivity.
+        Matrix<NodeIndex> p_connect; // Element wise connectivity.
 };
 
 /*
@@ -88,11 +89,11 @@ auto num_elements(const Double_Vector & knot_vector) -> int{
     }
     return n_elems;
 }
-
-para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & util_p){
+template <typename NodeIndex = UNSIGNED_INTEGER_TYPE>
+para_topo<NodeIndex> gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & util_p){
     Double_Matrix util_elRange(no_elems, 2);
     Int_Matrix util_elKnotIndices(no_elems, 2);
-    USInt_Matrix util_elConn(no_elems, util_p+1);
+    Matrix<NodeIndex> util_elConn(no_elems, util_p+1);
 
     int elem;
     elem = 0;
@@ -139,7 +140,7 @@ para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const in
 
     }
 
-    para_topo topo(util_elRange, util_elConn);
+    para_topo<NodeIndex> topo(util_elRange, util_elConn);
     return topo;
 }
 
@@ -233,7 +234,7 @@ Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B) {
 
 }  // Utils namespace
 
-
+template <typename NodeIndex = UNSIGNED_INTEGER_TYPE>
 struct coreNurbs{
 
 public:
@@ -317,13 +318,13 @@ public:
 
     void init_topo(void){
         // Connectivity Generation
-        utils::para_topo topo_u = utils::gen_topo(knot_u, nelems_u, p);
-        utils::para_topo topo_v = utils::gen_topo(knot_v, nelems_v, q);
+        utils::para_topo<NodeIndex> topo_u = utils::gen_topo<NodeIndex>(knot_u, nelems_u, p);
+        utils::para_topo<NodeIndex> topo_v = utils::gen_topo<NodeIndex>(knot_v, nelems_v, q);
 
         Double_Matrix elrange_u = topo_u.get_elrange();
-        USInt_Matrix elconn_u = topo_u.get_elconn();
+        Matrix<NodeIndex> elconn_u = topo_u.get_elconn();
         Double_Matrix elrange_v = topo_v.get_elrange();
-        USInt_Matrix elconn_v = topo_v.get_elconn();
+        Matrix<NodeIndex> elconn_v = topo_v.get_elconn();
 
         elRange.resize(t_nelems, 4);
         elConn.resize(t_nelems, (p+1)*(q+1));
@@ -376,7 +377,7 @@ public:
     Double_Vector GetWeights(void) const {return wgts;};               // Weights
     FLOATING_POINT_TYPE GetWeight(const UNSIGNED_INTEGER_TYPE & i) const {return wgts(i);};
     Double_Matrix GetKnotRanges(void) const {return elRange;};          // Element parametric range
-    USInt_Matrix GetIndices(void) const {return elConn;};                 // Element connectivity
+    Matrix<NodeIndex> GetIndices(void) const {return elConn;};                 // Element connectivity
 
 private:
     std::string p_filename;
@@ -388,7 +389,7 @@ private:
     Double_Vector wgts;
     Int_Matrix global_indices;
     Double_Matrix elRange;
-    USInt_Matrix elConn;
+    Matrix<NodeIndex> elConn;
     std::vector<Double_Matrix> C1, C2;
 //    auto no_nonzeros(const Double_Vector & vect) -> int;
 //    auto num_elements(const Double_Vector & knot_vector) -> int;

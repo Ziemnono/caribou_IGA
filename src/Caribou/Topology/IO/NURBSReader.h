@@ -18,7 +18,7 @@ template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex = UNSIGNED_INTEGER_
 class NURBSReader {
     static_assert(Dimension == 1 or Dimension == 2 or Dimension == 3, "The NURBSReader can only read 1D, 2D or 3D fields.");
 public:
-    using PatchType = SplinePatch<Dimension>;
+    using PatchType = SplinePatch<Dimension, NodeIndex>;
     // Indices storage format.
     using ElementsIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     // Knot ranges storage format.
@@ -45,10 +45,10 @@ public:
 //    }
 
 private:
-    NURBSReader(std::string filepath, coreNurbs * reader);
+    NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader);
 
     const std::string p_filepath;
-    std::unique_ptr<coreNurbs> p_reader;
+    std::unique_ptr<coreNurbs<NodeIndex>> p_reader;
     std::array<UNSIGNED_INTEGER_TYPE, Dimension> p_axes;
 };
 

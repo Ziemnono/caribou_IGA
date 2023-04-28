@@ -83,13 +83,13 @@ struct EigenSplineNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRo
 };
 
 template <
-    unsigned int WorldDimension,
+    unsigned int WorldDimension, typename NodeIndex = UNSIGNED_INTEGER_TYPE,
     typename NodeContainerType = EigenSplineNodesHolder<Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
 >
 class SplinePatch : public BaseSplinePatch {
 public:
 
-    using NodeIndex = UNSIGNED_INTEGER_TYPE;
+//    using NodeIndex = UNSIGNED_INTEGER_TYPE;
 
     using Element = geometry::BezierSurf<WorldDimension>;
     //
@@ -111,7 +111,7 @@ public:
 
     static_assert(WorldDimension == 1 or WorldDimension == 2 or WorldDimension == 3, "The world dimension must be 1, 2 or 3.");
 
-    using Self = SplinePatch<WorldDimension, NodeContainer_t>;
+    using Self = SplinePatch<WorldDimension, NodeIndex, NodeContainer_t>;
     static constexpr INTEGER_TYPE Dimension = WorldDimension;
     using Real = typename NodeContainer_t::Scalar;
     using WorldCoordinates = Eigen::Matrix<Real, 1, Dimension>;
@@ -256,7 +256,7 @@ public:
         p_extraction = extraction;
     }
 
-    explicit SplinePatch(const Double_Matrix & positions, const Double_Vector & weights, const USInt_Matrix & indices,
+    explicit SplinePatch(const Double_Matrix & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
                          const Double_Matrix & knotrange, const std::vector<Double_Matrix> & extraction)
     {
 
@@ -279,7 +279,7 @@ public:
         p_extraction = extraction;
     }
 
-    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const Double_Vector & weights, const USInt_Matrix & indices,
+    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
                          const Double_Matrix & knotrange, const std::vector<Double_Matrix> & extraction)
     {
 
@@ -670,17 +670,17 @@ namespace caribou::topology {
     // Template deduction guides that can help the compiler to automatically determine the
     // template parameters of the Mesh from the constructor used.
     // -------------------------------------------------------------------------------------
-    template <int WorldDimension, typename Real>
+    template <int WorldDimension, typename NodeIndex = UNSIGNED_INTEGER_TYPE, typename Real>
     SplinePatch(const std::vector<Eigen::Matrix<Real, 1, WorldDimension>> &) ->
     SplinePatch <
-        WorldDimension,
+        WorldDimension, NodeIndex,
         EigenSplineNodesHolder<Eigen::Matrix<Real, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
     >;
 
-    template <typename Derived>
+    template <typename Derived, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
     SplinePatch(const Eigen::MatrixBase<Derived> &) ->
     SplinePatch <
-        Eigen::MatrixBase<Derived>::ColsAtCompileTime,
+        Eigen::MatrixBase<Derived>::ColsAtCompileTime, NodeIndex,
         EigenSplineNodesHolder<
             Eigen::Matrix<
                 typename Eigen::MatrixBase<Derived>::Scalar,

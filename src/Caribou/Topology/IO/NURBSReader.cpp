@@ -24,7 +24,7 @@ template<UNSIGNED_INTEGER_TYPE Dimension>
 auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, const int & number_of_points) -> std::array<UNSIGNED_INTEGER_TYPE, Dimension>;
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs * reader)
+NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader)
 : p_filepath(std::move(filepath)), p_reader(std::move(reader)){ }
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
@@ -34,7 +34,7 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
         throw std::invalid_argument("File '" + filepath + "' does not exists or cannot be read.");
     }
     // Get all data from the file
-    coreNurbs * reader = new coreNurbs();
+    coreNurbs<NodeIndex> * reader = new coreNurbs<NodeIndex>();
 //    std::unique_ptr<coreNurbs> reader = std::make_unique<coreNurbs>();
     reader->SetFileName(filepath);
     reader->Update();
@@ -78,13 +78,12 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> PatchType{
     Double_Matrix nodes = p_reader->GetPoints();
     // Import Weights
     Double_Matrix weights = p_reader->GetWeights();
-
     // Import elements
     const auto number_of_elements = p_reader->GetNumberOfElements(); // Total Number of elements
 
     const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
     // Indices of the elements
-    USInt_Matrix indices;
+    Matrix<NodeIndex> indices;
     indices.resize(number_of_elements, number_of_nodes_per_element);
     indices = p_reader->GetIndices();
 
@@ -127,7 +126,7 @@ auto NURBSReader<Dimension, NodeIndex>::patch_ptr () const -> std::unique_ptr<Pa
 
     const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
     // Indices of the elements
-    USInt_Matrix indices;
+    Matrix<NodeIndex> indices;
     indices.resize(number_of_elements, number_of_nodes_per_element);
     indices = p_reader->GetIndices();
 

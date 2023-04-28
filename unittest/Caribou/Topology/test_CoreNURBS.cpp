@@ -7,6 +7,8 @@
 //#include <Caribou/Topology/IO/NURBSReader.h>
 //#include <Caribou/Topology/IO/trial_io.h>
 
+using NodeIndex = UNSIGNED_INTEGER_TYPE;
+
 TEST(CoreNURBS, para_topo) {
     // Testing para_topo data structure.
     /*
@@ -33,11 +35,11 @@ TEST(CoreNURBS, para_topo) {
     Double_Matrix element_ranges(2,4);
     element_ranges << 0, 0, 0.5, 1,
                       0.5, 0, 1, 1;
-    USInt_Matrix element_connectivity(2, 9);
+    Matrix<NodeIndex> element_connectivity(2, 9);
     element_connectivity << 0, 1, 2, 4, 5, 6, 8, 9, 10,
                             1, 2, 3, 5, 6, 7, 9, 10, 11;
 
-    utils::para_topo topo_info(element_ranges, element_connectivity);
+    utils::para_topo<NodeIndex> topo_info(element_ranges, element_connectivity);
     EXPECT_MATRIX_EQUAL(topo_info.get_elrange(), element_ranges);
     EXPECT_MATRIX_EQUAL(topo_info.get_elconn(), element_connectivity);
 }
@@ -45,7 +47,7 @@ TEST(CoreNURBS, para_topo) {
 TEST(CoreNURBS, reader_knot) {
     using namespace caribou;
     using namespace caribou::topology::io;
-    coreNurbs nurbs_patch;
+    coreNurbs<NodeIndex> nurbs_patch;
     nurbs_patch.SetFileName(executable_directory_path + "/meshes/splines/knot_test_geo.txt");
     nurbs_patch.Update();
 
@@ -73,7 +75,7 @@ TEST(CoreNURBS, reader_knot) {
 TEST(CoreNURBS, reader_rectangle) {
     using namespace caribou;
     using namespace caribou::topology::io;
-    coreNurbs nurbs_patch;
+    coreNurbs<NodeIndex> nurbs_patch;
     nurbs_patch.SetFileName(executable_directory_path + "/meshes/splines/xy_rectangle.txt");
     nurbs_patch.Update();
 
@@ -101,7 +103,7 @@ TEST(CoreNURBS, reader_rectangle) {
 TEST(CoreNURBS, quarter_cylinder) {
     using namespace caribou;
     using namespace caribou::topology::io;
-    coreNurbs nurbs_patch;
+    coreNurbs<NodeIndex> nurbs_patch;
     nurbs_patch.SetFileName(executable_directory_path + "/meshes/splines/quarter_cylinder.txt");
     nurbs_patch.Update();
 
