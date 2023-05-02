@@ -18,6 +18,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 
 #include <Caribou/Topology/SplinePatch.h>
 #include <Caribou/Topology/IO/NURBSReader.h>
+#include <Caribou/Topology/IO/NURBSReader.cpp>
 
 #include "../sofacaribou_test.h"
 

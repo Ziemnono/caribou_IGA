@@ -16,7 +16,12 @@ set(HEADER_FILES
     IO/IGACellType.h
     BaseSplinePatch.h
     SplinePatch.h
+#    IO/NURBSReader.h
 )
+
+#set(SOURCE_FILES
+#    IO/NURBSReader.cpp
+#)
 
 set(TARGET_TYPE "INTERFACE")
 set(TARGET_VISIBILITY "INTERFACE")
@@ -33,6 +38,8 @@ if (CARIBOU_WITH_VTK)
         include(${VTK_USE_FILE})
     endif()
 endif()
+
+#list(APPEND SOURCE_FILES IO/NURBSReader.cpp)
 
 find_package(Eigen3 QUIET REQUIRED)
 
