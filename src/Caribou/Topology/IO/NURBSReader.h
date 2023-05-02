@@ -38,7 +38,7 @@ public:
 
     /** Build the actual unstructured mesh from the txt file. */
     [[nodiscard]]
-    auto patch_ptr() const -> std::unique_ptr<PatchType>;
+    auto patch_ptr() const -> const PatchType *;
 
 //    ~NURBSReader(){
 //        free(p_reader);

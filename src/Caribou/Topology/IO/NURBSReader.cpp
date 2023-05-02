@@ -110,7 +110,7 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> PatchType{
 
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-auto NURBSReader<Dimension, NodeIndex>::patch_ptr () const -> std::unique_ptr<PatchType> {
+auto NURBSReader<Dimension, NodeIndex>::patch_ptr () const -> const PatchType * {
     const auto number_of_nodes = p_reader->GetNumberOfPoints();
     if (number_of_nodes == 0) {
         return NULL;
@@ -144,7 +144,7 @@ auto NURBSReader<Dimension, NodeIndex>::patch_ptr () const -> std::unique_ptr<Pa
         element_extractions[i] = p_reader->GetExtraction(i);
     }
     std::unique_ptr<PatchType> m ( new PatchType(nodes, weights, indices, knot_ranges, element_extractions) );
-    return m;
+    return m.get();
 }
 
 /**

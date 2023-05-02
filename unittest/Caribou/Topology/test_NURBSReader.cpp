@@ -46,7 +46,7 @@ TEST(SplinePatch, quarter_cyl_ptr){
     using PatchType = io::NURBSReader<_2D>::PatchType;
     std::string path = executable_directory_path + "/meshes/splines/quarter_cylinder.txt";
     auto reader = io::NURBSReader<_2D>::Read(path);
-    std::unique_ptr<PatchType> patch = reader.patch_ptr();
+    const PatchType * patch = reader.patch_ptr();
     std::cout << "\n ############  START -- UNIQUE_PTR  ########## \n";
     std::cout << "\n No. of nodes xy -> " << patch->number_of_nodes() << "\n";
 //    EXPECT_EQ(patch.number_of_nodes(), 9);
