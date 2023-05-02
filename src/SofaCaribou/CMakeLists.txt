@@ -52,6 +52,8 @@ set(HEADER_FILES
     Solver/LLTSolver.h
     Solver/LUSolver.h
     Topology/CaribouTopology.h
+    # CaribouSplineTopology
+    Topology/CaribouSplineTopology.h
     Topology/CaribouTopology[Hexahedron].h
     Topology/CaribouTopology[Hexahedron20].h
     Topology/CaribouTopology[Quad].h
@@ -60,6 +62,8 @@ set(HEADER_FILES
     Topology/CaribouTopology[Tetrahedron10].h
     Topology/CaribouTopology[Triangle].h
     Topology/CaribouTopology[Triangle6].h
+    # CaribouSplineTopology
+    Topology/CaribouSplineTopology[BezierSurf].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -79,6 +83,8 @@ set(TEMPLATE_FILES
     Solver/ConjugateGradientSolver.inl
     Solver/EigenSolver.inl
     Topology/CaribouTopology.inl
+    # CaribouSplineTopology
+    Topology/CaribouSplineTopology.inl
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl
@@ -131,6 +137,8 @@ set(SOURCE_FILES
     Topology/CaribouTopology[Tetrahedron10].cpp
     Topology/CaribouTopology[Triangle].cpp
     Topology/CaribouTopology[Triangle6].cpp
+    # CaribouSplineTopology
+    Topology/CaribouSplineTopology[BezierSurf].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp
