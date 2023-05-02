@@ -11,6 +11,7 @@ set(SOURCE_FILES
         ODE/test_backward_euler.cpp
         ODE/test_static.cpp
         Topology/test_fictitiousgrid.cpp
+        Topology/test_caribousplinetopology.cpp
 )
 
 enable_testing()
