@@ -8,6 +8,7 @@ set(HEADER_FILES
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h
     Forcefield/CaribouForcefield.h
+    Forcefield/CaribouSplineForcefield.h
     Forcefield/CaribouForcefield[Hexahedron].h
     Forcefield/CaribouForcefield[Hexahedron20].h
     Forcefield/CaribouForcefield[Quad].h
@@ -76,6 +77,7 @@ set(HEADER_FILES
 
 set(TEMPLATE_FILES
     Forcefield/CaribouForcefield.inl
+    Forcefield/CaribouSplineForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
     Mapping/CaribouBarycentricMapping.inl
