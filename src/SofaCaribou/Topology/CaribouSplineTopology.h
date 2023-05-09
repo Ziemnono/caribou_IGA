@@ -3,7 +3,7 @@
 #include <SofaCaribou/config.h>
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Topology/SplinePatch.h>
-
+#include <unsupported/Eigen/CXX11/Tensor>
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/objectmodel/BaseObject.h>
@@ -71,6 +71,15 @@ public:
     template <typename T>
     using Data = sofa::core::objectmodel::Data<T>;
 
+    using mat =sofa::defaulttype::BaseMatrix;
+
+    template<int nRows, int nColumns>
+    using Matrix =Eigen::Matrix<Real, nRows, nColumns, Eigen::RowMajor>;
+
+
+    template<int nRows, int nColumns>
+    using Tensor =Eigen::Matrix<Real, nRows, nColumns, Eigen::RowMajor>;
+
 //    using Domain = typename caribou::topology::SplinePatch<Dimesion, PointID>;
     using LocalCoordinates = typename caribou::geometry::Element<Element>::LocalCoordinates;
     using WorldCoordinates = typename caribou::geometry::Element<Element>::WorldCoordinates;
@@ -126,6 +135,7 @@ public:
      *       component.
      */
     void attachSplinePatch(const SplinePatch * p_patch);
+    void attachSplinePatch(const SplinePatch & p_patch);
 
 //    /**
 //     * Create the underlying Domain by coping the indices from the data attribute 'indices'.
@@ -176,19 +186,23 @@ private:
     /// Node indices (w.r.t the position vector) of each elements.
     Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
 
-    /// Knot ranges
+//    /// Knot ranges
     Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>> d_knots;
 
-    /// Weights
+//    /// Weights
     Data<sofa::type::vector<Real>> d_weights;
 
     /// Extraction
-    Data<sofa::type::vector< sofa::type::vector< sofa::type::vector<Real> > > > d_extractions;
-//    Data<Data<sofa::type::vector<Eigen::Matrix<Real, NumberOfNodes, NumberOfNodes, Eigen::RowMajor>>>> d_extractions;
+//    Data<sofa::type::vector< sofa::type::vector< sofa::type::vector<Real> > > > d_extractions;
+//    Data<Matrix<NumberOfNodes, NumberOfNodes> > d_extractions;
+
+//    Data<sofa::type::vector<sofa::type::fixed_array<sofa::type::fixed_array<Real, NumberOfNodes>, NumberOfNodes>>> d_extractions;
+//    Data<sofa::type::vector<Eigen::Matrix<Real, NumberOfNodes, NumberOfNodes, Eigen::RowMajor>>> d_extractions;
     /// Pointer to the Domain representing this topology of elements.
 //    const Domain * p_domain {nullptr};
     // Pointer to spinepatch
     const SplinePatch * p_patch ;
+    const SplinePatch p_patch_n ;
 //    std::unique_ptr< caribou::topology::SplinePatch<Dimension, PointID> > p_patch;
 };
 

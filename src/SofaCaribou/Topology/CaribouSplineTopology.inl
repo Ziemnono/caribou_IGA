@@ -26,9 +26,9 @@ CaribouSplineTopology<Element>::CaribouSplineTopology ()
 , d_weights(initData(&d_weights,
     "weights",
     "weight vector of the patch nodes."))
-, d_extractions(initData(&d_position,
-    "extractions",
-    "vector of extraction_matrix of each element"))
+//, d_extractions(initData(&d_extractions,
+//    "extractions",
+//    "vector of extraction_matrix of each element"))
 {}
 
 template <typename Element>
@@ -36,44 +36,52 @@ void CaribouSplineTopology<Element>::attachSplinePatch(const caribou::topology::
     this->p_patch = patch;
     // creating d_indices pointer to write into it.
     using namespace sofa::helper;
+    auto positions = WriteOnlyAccessor<Data<VecCoord>>(d_position);
     auto indices = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>>>(d_indices);
     auto knots = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>>>(d_knots);
     auto weights = WriteOnlyAccessor<Data<sofa::type::vector<Real>>>(d_weights);
-    auto extractions = WriteOnlyAccessor<Data<sofa::type::vector< sofa::type::vector< sofa::type::vector<Real> > > > >(d_extractions);
-//    auto extractions = WriteOnlyAccessor< Data<Data<sofa::type::vector<Eigen::Matrix<Real, NumberOfNodes, NumberOfNodes, Eigen::RowMajor>>>> >(d_extractions);
+//    auto extractions = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<sofa::type::fixed_array<Real, NumberOfNodes>, NumberOfNodes>>>>(d_extractions);
 
+//    auto extractions = WriteOnlyAccessor< Data<sofa::type::vector< Matrix<NumberOfNodes, NumberOfNodes> >>>(d_extractions);
+//    auto extractions = WriteOnlyAccessor< Data<sofa::type::vector< Matrix<NumberOfNodes, NumberOfNodes> >>>(d_extractions);
 
     const auto number_of_elements = patch->number_of_elements();
     indices.resize(number_of_elements);
-
+    knots.resize(number_of_elements);
+   // extractions.resize(number_of_elements);
     for (sofa::Index element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto element_indices = patch->element_indices(element_id);
         const auto element_knots = patch->element_knotranges(element_id);
         const auto element_extr = patch->element_extraction(element_id);
+
         for (sofa::Index node_id = 0; node_id < NumberOfNodes; ++node_id) {
             indices[element_id][node_id] = static_cast<PointID>(element_indices[node_id]);
         }
+
         for (sofa::Index node_id = 0; node_id < KnotDimension; ++node_id) {
             knots[element_id][node_id] = static_cast<Real>(element_knots[node_id]);
         }
-        for (sofa::Index row = 0; row < NumberOfNodes; ++row) {
-            for (sofa::Index col = 0; col < NumberOfNodes; ++col) {
-                extractions[element_id][row][col] = static_cast<Real>(element_extr(row, col));
-//                extractions[element_id](row, col) << static_cast<Real>(element_extr(row, col));
 
-
-            }
-
-        }
-//        extractions[element_id] = static_cast<Eigen::Matrix<Real, NumberOfNodes, NumberOfNodes, Eigen::RowMajor>>(element_extr);
+//        for (sofa::Index row = 0; row < NumberOfNodes; ++row) {
+//            for (sofa::Index col = 0; col < NumberOfNodes; ++col) {
+////                extractions[element_id][row][col] = static_cast<Real>(element_extr(row, col));
+//                }
+//        }
     }
     const auto total_nodes = patch->number_of_nodes();
     weights.resize(total_nodes);
+    positions.resize(total_nodes);
     for (sofa::Index node_id = 0; node_id < total_nodes; ++node_id) {
-        weights[node_id] = static_cast<Real>(patch->weight(node_id));
+        weights[node_id] = static_cast<Real>(patch->weight(node_id)); // Weights
+        // Assigning node data.
+        const auto node = patch->position(node_id);
+        for (sofa::Index i = 0; i < 2; i++) {
+            positions[node_id][i] = static_cast<Real>(node[i]);
+        }
     }
-
 }
+
+
 
 //template <typename Element>
 //void CaribouSplineTopology<Element>::initializeFromIndices() {

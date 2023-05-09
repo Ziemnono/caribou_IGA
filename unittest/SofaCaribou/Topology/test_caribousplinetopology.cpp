@@ -51,33 +51,49 @@ TEST(CaribouSplineTopology, BezierSurf2DAttachPatch) {
     EXPECT_EQ(splinepatch->number_of_nodes(), 9);
     EXPECT_EQ(splinepatch->number_of_nodes_per_elements(), 9);
     EXPECT_EQ(splinepatch->number_of_elements(), 1);
+    std::cout << "\n  ---------------------- INITIAL TEST ARE EXECUTED \n";
 
 
-//    EXPECT_EQ(splinepatch->number_of_domains(), 2);
-
-//    // First domain is the segment contour, second is the quad surface domain
-//    // Get the second one
-//    const auto * domain = dynamic_cast<const Domain * >(splinepatch->domain(1));
 
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
-//    auto root = getSimulation()->createNewNode("root");
+    auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-//    auto topo = dynamic_cast<SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>> *> (
-//            createObject(root, "CaribouSplineTopology", {{"template", "BezierSurf_2D"}}).get() );
-//    EXPECT_NE(topo, nullptr);
-
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>> *> (
+            createObject(root, "CaribouSplineTopology", {{"template", "BezierSurf_2D"}}).get() );
+    EXPECT_NE(topo, nullptr);
+    std::cout << "\n ----------------------  TOPO IS CREATED\n";
     // Attach the spline patch
-//    topo->attachSplinePatch(splinepatch);
+    topo->attachSplinePatch(splinepatch);
+    std::cout << "\n ---------------------- SPLINE PATCH ATTACHED \n";
+    // Make sure the data parameter `indices` has been filled-up correctly
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>>;
+    auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
+//    EXPECT_EQ(indices.size(), 16); // Number of elements
+    std::cout << "\n Inidices starts : " << indices.size() << "\n END \n";
 
-//    // Make sure the data parameter `indices` has been filled-up correctly
-//    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>>;
-//    auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
-////    EXPECT_EQ(indices.size(), 16); // Number of elements
+    using real_val = SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>>::Real;
+    using Dataknots = Data<sofa::type::vector<sofa::type::fixed_array<real_val, 4>>>;
+    auto knots = ReadAccessor<Dataknots> (dynamic_cast<Dataknots*>(topo->findData("knots")));
+    std::cout << "\n Knots starts : " << knots[0] << "\n END \n";
+    using Datawgts = Data<sofa::type::vector<real_val>>;
+    auto weights = ReadAccessor<Datawgts> (dynamic_cast<Datawgts*>(topo->findData("weights")));
+    std::cout << "\n Weights Start : " << weights[0] << "\n END \n";
 
+//    using Dataextrs = Data<sofa::type::vector<sofa::type::fixed_array<sofa::type::fixed_array<real_val, 9>, 9>>>;
+//    auto extras = ReadAccessor<Dataextrs> (dynamic_cast<Dataextrs*>(topo->findData("extractions")));
+//    std::cout << "\n Extraaction matrix Start : \n" << extras[0][0] << "\n"; // First row
+
+    using vcord = SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>>::VecCoord;
+    using Datapositions = Data<vcord>;
+    auto positions = ReadAccessor<Datapositions> (dynamic_cast<Datapositions*>(topo->findData("position")));
+    std::cout << "\n Positions 1 : \n" << positions[0] << "\n"; // First row
+    std::cout << "\n Positions 2 : \n" << positions[1] << "\n"; // First row
+    std::cout << "\n Positions 3 : \n" << positions[2] << "\n"; // First row
+    std::cout << "\n Positions 4 : \n" << positions[4] << "\n"; // First row
 }
 
 
