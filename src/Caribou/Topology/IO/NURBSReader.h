@@ -45,10 +45,11 @@ public:
 //    }
 
 private:
-    NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader);
+    NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader, PatchType * patch);
 
     const std::string p_filepath;
     std::unique_ptr<coreNurbs<NodeIndex>> p_reader;
+    std::unique_ptr<PatchType> p_patch;
     std::array<UNSIGNED_INTEGER_TYPE, Dimension> p_axes;
 };
 

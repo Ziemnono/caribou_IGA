@@ -24,8 +24,8 @@ template<UNSIGNED_INTEGER_TYPE Dimension>
 auto nurbs_extract_axes_from_3D_vectors(const Double_Matrix & input_points, const int & number_of_points) -> std::array<UNSIGNED_INTEGER_TYPE, Dimension>;
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
-NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader)
-: p_filepath(std::move(filepath)), p_reader(std::move(reader)){ }
+NURBSReader<Dimension, NodeIndex>::NURBSReader(std::string filepath, coreNurbs<NodeIndex> * reader, PatchType * patch)
+: p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_patch(std::move(patch)){ }
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
 auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NURBSReader<Dimension, NodeIndex> {
@@ -38,9 +38,32 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
 //    std::unique_ptr<coreNurbs> reader = std::make_unique<coreNurbs>();
     reader->SetFileName(filepath);
     reader->Update();
-    std::cout << "In CPP Read \n" << reader->GetKnotRanges() << "\n";
+
+    // ------------------------  SplinePatch pointer -------------------------
+    Double_Matrix nodes = reader->GetPoints();
+    // Import Weights
+    Double_Matrix weights = reader->GetWeights();
+    const auto number_of_elements = reader->GetNumberOfElements(); // Total Number of elements
+    const auto number_of_nodes_per_element = reader->GetNumberOfElementPoints(); // Number of nodes per element
+    // Indices of the elements
+    Matrix<NodeIndex> indices;
+    indices.resize(number_of_elements, number_of_nodes_per_element);
+    indices = reader->GetIndices();
+
+    // Knot range of elements
+    Double_Matrix knot_ranges;
+    knot_ranges.resize(number_of_elements, 4);
+    knot_ranges = reader->GetKnotRanges();
+    Double_Matrix a;
+    // Extraction matrix
+    using ElementExtraction = std::vector<Double_Matrix>;
+    ElementExtraction element_extractions(number_of_elements);
+    for (int i = 0; i < number_of_elements; ++i) {
+        element_extractions[i] = reader->GetExtraction(i);
+    }
+    PatchType * m =  new PatchType(nodes, weights, indices, knot_ranges, element_extractions);
 //    const auto axes = nurbs_extract_axes_from_3D_vectors<Dimension>(reader->GetPoints(), reader->GetNumberOfPoints());
-    NURBSReader<Dimension, NodeIndex> nr(filepath, reader);
+    NURBSReader<Dimension, NodeIndex> nr(filepath, reader, m);
 //    free reader;
     return nr;
 }
@@ -111,40 +134,42 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> PatchType{
 
 template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
 auto NURBSReader<Dimension, NodeIndex>::patch_ptr () const -> const PatchType * {
-    const auto number_of_nodes = p_reader->GetNumberOfPoints();
-    if (number_of_nodes == 0) {
-        return NULL;
-    }
+//    const auto number_of_nodes = p_reader->GetNumberOfPoints();
+//    if (number_of_nodes == 0) {
+//        return NULL;
+//    }
 
-    std::cout << "In CPP \n" << p_reader->GetKnotRanges() << "\n";
-    Double_Matrix nodes = p_reader->GetPoints();
-    // Import Weights
-    Double_Matrix weights = p_reader->GetWeights();
+//    std::cout << "In CPP \n" << p_reader->GetKnotRanges() << "\n";
+//    Double_Matrix nodes = p_reader->GetPoints();
+//    // Import Weights
+//    Double_Matrix weights = p_reader->GetWeights();
 
-    // Import elements
-    const auto number_of_elements = p_reader->GetNumberOfElements(); // Total Number of elements
+//    // Import elements
+//    const auto number_of_elements = p_reader->GetNumberOfElements(); // Total Number of elements
 
-    const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
-    // Indices of the elements
-    Matrix<NodeIndex> indices;
-    indices.resize(number_of_elements, number_of_nodes_per_element);
-    indices = p_reader->GetIndices();
+//    const auto number_of_nodes_per_element = p_reader->GetNumberOfElementPoints(); // Number of nodes per element
+//    // Indices of the elements
+//    Matrix<NodeIndex> indices;
+//    indices.resize(number_of_elements, number_of_nodes_per_element);
+//    indices = p_reader->GetIndices();
 
-    // Knot range of elements
-    Double_Matrix knot_ranges;
-    knot_ranges.resize(number_of_elements, 4);
-    knot_ranges = p_reader->GetKnotRanges();
-    Double_Matrix a;
-    // Extraction matrix
-    using ElementExtraction = std::vector<Double_Matrix>;
-    ElementExtraction element_extractions(number_of_elements);
-//    const auto extraction_size = p_reader->GetExtractionSize();
-    for (int i = 0; i < number_of_elements; ++i) {
-//        element_extractions[i].resize(extraction_size, extraction_size);
-        element_extractions[i] = p_reader->GetExtraction(i);
-    }
-    std::unique_ptr<PatchType> m ( new PatchType(nodes, weights, indices, knot_ranges, element_extractions) );
-    return m.get();
+//    // Knot range of elements
+//    Double_Matrix knot_ranges;
+//    knot_ranges.resize(number_of_elements, 4);
+//    knot_ranges = p_reader->GetKnotRanges();
+//    Double_Matrix a;
+//    // Extraction matrix
+//    using ElementExtraction = std::vector<Double_Matrix>;
+//    ElementExtraction element_extractions(number_of_elements);
+////    const auto extraction_size = p_reader->GetExtractionSize();
+//    for (int i = 0; i < number_of_elements; ++i) {
+////        element_extractions[i].resize(extraction_size, extraction_size);
+//        element_extractions[i] = p_reader->GetExtraction(i);
+//    }
+////    std::unique_ptr<PatchType> m = std::make_unique<PatchType>(nodes, weights, indices, knot_ranges, element_extractions);
+//    std::unique_ptr<PatchType> m ( new PatchType(nodes, weights, indices, knot_ranges, element_extractions) );
+////    p_patch = std::move(m);
+    return p_patch.get();
 }
 
 /**
