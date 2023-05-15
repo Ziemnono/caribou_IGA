@@ -72,6 +72,7 @@ template <typename Derived>
 #include "test_spline.h"
 #include "test_beziercrv.h"
 #include "test_beziersurf.h"
+#include "test_nurbssurf.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

@@ -60,17 +60,6 @@ TEST(BezierSurf, Quadratic) {
             numerical_solution += p1(beziersurf.world_coordinates(x)) * w * detJ;
         }
 
-//        // Integration
-//        const auto x0 = node_0[0];
-//        const auto y0 = node_0[1];
-//        const auto w0 = node_0[2];
-//        const auto x2 = node_2[0];
-//        const auto y2 = node_2[1];
-//        const auto w2 = node_2[2];
-//        const auto d = (node_2 - node_0).norm();
-//        FLOATING_POINT_TYPE analytic_solution = d * (x0 + x2 + 3*y0/2. + 3*y2/2. + 2*w0 + 2*w2 + 5);
-//        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
-
     }
     // 3D
     {
@@ -103,31 +92,6 @@ TEST(BezierSurf, Quadratic) {
             const auto x = gauss_node.position;
             EXPECT_DOUBLE_EQ(beziersurf.interpolate(x, values), p1(beziersurf.world_coordinates(x)));
         }
-
-
-//        // Integration
-//        FLOATING_POINT_TYPE numerical_solution = 0;
-//        for (const auto & gauss_node : beziersurf.gauss_nodes()) {
-//            const auto x = gauss_node.position;
-//            const auto w = gauss_node.weight;
-//            const auto J =  beziersurf.jacobian(x);
-//            const auto detJ = J.norm();
-//            numerical_solution += p1(beziersurf.world_coordinates(x)) * w * detJ;
-//        }
-
-//        std::cout << "Numerical sol \n " << numerical_solution << "\n";
-
-//        const auto x0 = node_0[0];
-//        const auto y0 = node_0[1];
-//        const auto z0 = node_0[2];
-//        const auto w0 = node_0[3];
-//        const auto x2 = node_2[0];
-//        const auto y2 = node_2[1];
-//        const auto z2 = node_2[2];
-//        const auto w2 = node_2[3];
-//        const auto d = (node_2 - node_0).norm();
-//        FLOATING_POINT_TYPE analytic_solution = d * (x0 + x2 + 3*y0/2. + 3*y2/2. + 2*z0 + 2*z2 + 5*w0/2 + 5*w2/2 + 5);
-//        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
 
     }
 }
