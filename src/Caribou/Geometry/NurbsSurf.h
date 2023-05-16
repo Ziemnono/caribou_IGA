@@ -267,19 +267,26 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     }
 
+    Scalar jacobian_parent2para(const LocalCoordinates & xi){
+        auto Jxi = 0.5 * (this->p_knot_span[2] - this->p_knot_span[0]);
+        auto Jeta = 0.5 * (this->p_knot_span[3] - this->p_knot_span[1]);
+        return Jxi * Jeta;
+    }
 private:
     // Implementations
     friend struct Element<NurbsSurf <_Dimension>>;
     friend struct BaseNurbsSurf<NurbsSurf <_Dimension>>;
 
+
     auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
         // U direction basis
-        Scalar u = 0.5 * (xi[0]*(this->p_knot_span[2] - this->p_knot_span[0]) + (this->p_knot_span[2] - this->p_knot_span[0]));
+        Scalar u = 0.5 * (xi[0]*(this->p_knot_span[2] - this->p_knot_span[0]) + (this->p_knot_span[2] + this->p_knot_span[0]));
+        Scalar v = 0.5 * (xi[1]*(this->p_knot_span[3] - this->p_knot_span[1]) + (this->p_knot_span[3] + this->p_knot_span[1]));
+
         auto knot1 = this->p_knot_1;
         auto basis_u = bspbasisfun(u, Degree_1, knot1);
 
         auto knot2 = this->p_knot_2;
-        Scalar v = 0.5 * (xi[1]*(this->p_knot_span[3] - this->p_knot_span[1]) + (this->p_knot_span[3] - this->p_knot_span[1]));
         auto basis_v = bspbasisfun(v, Degree_2, knot2);
 
         Dyn_Matrix m = basis_v * basis_u.transpose();
@@ -292,8 +299,8 @@ private:
 
     inline auto get_dL(const LocalCoordinates & xi) const -> Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> {
         Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> dL;
-        Scalar u = 0.5 * (xi[0]*(this->p_knot_span[2] - this->p_knot_span[0]) + (this->p_knot_span[2] - this->p_knot_span[0]));
-        Scalar v = 0.5 * (xi[1]*(this->p_knot_span[3] - this->p_knot_span[1]) + (this->p_knot_span[3] - this->p_knot_span[1]));
+        Scalar u = 0.5 * (xi[0]*(this->p_knot_span[2] - this->p_knot_span[0]) + (this->p_knot_span[2] + this->p_knot_span[0]));
+        Scalar v = 0.5 * (xi[1]*(this->p_knot_span[3] - this->p_knot_span[1]) + (this->p_knot_span[3] + this->p_knot_span[1]));
 
 //        std::cout << "\nu - " <<  u << "\n";
 //        std::cout << "v - " <<  v << "\n";
@@ -350,8 +357,8 @@ private:
         double dB_dv_w2 = dB_dv_B2.sum();
         deris.col(1) = dB_dv_B2/w1 - B1 * dB_dv_w2/(w1*w1);
 
-        deris = deris * 0.25 * (this->p_knot_span[2] - this->p_knot_span[0])
-                * (this->p_knot_span[3] - this->p_knot_span[1]);
+//        deris = deris * 0.25 * (this->p_knot_span[2] - this->p_knot_span[0])
+//                * (this->p_knot_span[3] - this->p_knot_span[1]);
 //        std::cout << "\n Final deris \n" <<  deris << "\n";
 
 //        std::cout << "This is the end \n";
