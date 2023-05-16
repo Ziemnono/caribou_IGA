@@ -23,8 +23,9 @@ public:
     using ElementsIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     // Knot ranges storage format.
     using Double_Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-    // Extraction Matrices storage format.
-    using ElementsExtraction = std::vector<Double_Matrix>; //
+    using Double_Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
+
+    using DynVector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
 
     /** Build a new NURBSReader instance by reading a txt file. */
     static auto Read(const std::string & filepath) -> NURBSReader;
