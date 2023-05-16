@@ -16,12 +16,7 @@ set(HEADER_FILES
     IO/IGACellType.h
     BaseSplinePatch.h
     SplinePatch.h
-#    IO/NURBSReader.h
 )
-
-#set(SOURCE_FILES
-#    IO/NURBSReader.cpp
-#)
 
 set(TARGET_TYPE "INTERFACE")
 set(TARGET_VISIBILITY "INTERFACE")
