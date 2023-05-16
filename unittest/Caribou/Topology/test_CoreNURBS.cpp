@@ -66,9 +66,6 @@ TEST(CoreNURBS, reader_knot) {
     knot_v << 0, 0, 0, 1, 1, 1;
     EXPECT_MATRIX_EQUAL(nurbs_patch.get_knot_u(), knot_u);
     EXPECT_MATRIX_EQUAL(nurbs_patch.get_knot_v(), knot_v);
-
-    // Extraction Matrix
-
 }
 
 
@@ -130,20 +127,44 @@ TEST(CoreNURBS, quarter_cylinder) {
                   0.5, 0, 1, 1;
     EXPECT_MATRIX_EQUAL(nurbs_patch.GetKnotRanges(), knotranges);
 
-    Double_Matrix ext1(9,9);
-    ext1 << 1,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  1,  0.5,0,  0,  0,  0,  0,  0,
-            0,  0,  0.5,0,  0,  0,  0,  0,  0,
-            0,  0,  0,  1,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,  1,  0.5,0,  0,  0,
-            0,  0,  0,  0,  0,  0.5,0,  0,  0,
-            0,  0,  0,  0,  0,  0,  1,  0,  0,
-            0,  0,  0,  0,  0,  0,  0,  1,  0.5,
-            0,  0,  0,  0,  0,  0,  0,  0,  0.5;
-    EXPECT_MATRIX_EQUAL(nurbs_patch.GetExtraction(0), ext1);
-//    std::cout << "Extraction matrix :: \n" << nurbs_patch.GetExtraction(0) << "\n";
-//    std::cout << "Ele Knot 1 :: \n" << nurbs_patch.GetKnotRanges() << "\n";
+}
 
+TEST(CoreNURBS, plate_hole) {
+    using namespace caribou;
+    using namespace caribou::topology::io;
+    coreNurbs<NodeIndex> nurbs_patch;
+    nurbs_patch.SetFileName(executable_directory_path + "/meshes/splines/plate_hole_geo.txt");
+    nurbs_patch.Update();
+
+    EXPECT_EQ(nurbs_patch.GetP(), 2);
+    EXPECT_EQ(nurbs_patch.GetQ(), 2);
+
+    // Weights
+    Double_Vector wgts(12);
+    wgts << 1.000000000000000,   0.853553390593274,   0.853553390593274,  1.000000000000000,   1.000000000000000,
+            1.000000000000000,   1.000000000000000,   1.000000000000000,   1.000000000000000,  1.000000000000000,
+            1.000000000000000,   1.000000000000000 ;
+
+//    std::cout << "Weights : \n" << nurbs_patch.GetWeights().transpose() << "\n";
+//    std::cout << "Control points : \n" << nurbs_patch.GetPoints().transpose() << "\n";
+//    std::cout << "Knot U : \n" << nurbs_patch.get_knot_u().transpose() << "\n";
+//    std::cout << "Knot V : \n" << nurbs_patch.get_knot_v().transpose() << "\n";
+//    std::cout << "Spans : \n" << nurbs_patch.GetKnotRanges() << "\n";
+    EXPECT_MATRIX_EQUAL(nurbs_patch.GetWeights(), wgts);
+    EXPECT_EQ(nurbs_patch.GetWeight(0), wgts(0));
+    EXPECT_EQ(nurbs_patch.GetWeight(1), wgts(1));
+
+    // Indices - Unsigned integer type
+    USInt_Matrix indices(nurbs_patch.GetNumberOfElements(), nurbs_patch.GetNumberOfElementPoints());
+    indices << 0, 1, 2, 4, 5, 6, 8, 9, 10,
+               1, 2, 3, 5, 6, 7, 9, 10, 11;
+    EXPECT_MATRIX_EQUAL(nurbs_patch.GetIndices(), indices);
+
+    // KnotRanges
+    Double_Matrix  knotranges(nurbs_patch.GetNumberOfElements(), 4);
+    knotranges << 0, 0, 0.5, 1,
+                  0.5, 0, 1, 1;
+    EXPECT_MATRIX_EQUAL(nurbs_patch.GetKnotRanges(), knotranges);
 
 }
 
