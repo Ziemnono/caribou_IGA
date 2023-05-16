@@ -187,10 +187,14 @@ private:
     Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
 
 //    /// Knot ranges
-    Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>> d_knots;
+    Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>> d_knot_spans;
 
 //    /// Weights
     Data<sofa::type::vector<Real>> d_weights;
+    // U direction knot vector
+    Data<sofa::type::vector<Real>> d_knot_1;
+    // V direction knot vector
+    Data<sofa::type::vector<Real>> d_knot_2;
 
     /// Extraction
 //    Data<sofa::type::vector< sofa::type::vector< sofa::type::vector<Real> > > > d_extractions;
