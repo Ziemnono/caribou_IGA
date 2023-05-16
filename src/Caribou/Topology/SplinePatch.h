@@ -637,6 +637,24 @@ public:
     }
     // ===================== Weights ===============================
 
+    // ===================== knots  ===============================
+    inline auto size_knot_1() const {
+        return p_knot_1.size();
+    }
+
+    inline auto size_knot_2() const {
+        return p_knot_2.size();
+    }
+
+    inline auto knot_1() const {
+        return p_knot_1;
+    }
+
+    inline auto knot_2() const {
+        return p_knot_2;
+    }
+    // ===================== knots ===============================
+
     /*! Swap the data of two meshes */
     friend void swap(SplinePatch & first, SplinePatch& second) noexcept
     {
