@@ -17,14 +17,14 @@
 namespace caribou::topology::io {
 
 template<typename dtype>
-using Vector = Eigen::Matrix<dtype, 1, Eigen::Dynamic, Eigen::RowMajor>;
+using Vector = Eigen::Matrix<dtype, Eigen::Dynamic, 1>;
 
 template<typename dtype>
-using Matrix = Eigen::Matrix<dtype, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using Matrix = Eigen::Matrix<dtype, Eigen::Dynamic, Eigen::Dynamic>;
 
-using Double_Vector = Vector<double>;
+using Double_Vector = Vector<FLOATING_POINT_TYPE>;
 using Int_Vector = Vector<int>;
-using Double_Matrix = Matrix<double>;
+using Double_Matrix = Matrix<FLOATING_POINT_TYPE>;
 using Int_Matrix = Matrix<int>;
 using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
 
@@ -67,7 +67,7 @@ OUTPUT :: Number of non-zero values in the input vector.
 auto no_nonzeros(const Double_Vector & vect) -> int {
     int count = 0;
 
-    for (size_t i = 0; i< static_cast<size_t>(vect.cols()); i++)
+    for (size_t i = 0; i< static_cast<size_t>(vect.size()); i++)
     {
         if (vect[i] == 0.0){continue;}
         count = count + 1;
@@ -81,7 +81,7 @@ OUTPUT :: Number of possible elements from the vector.
 */
 auto num_elements(const Double_Vector & knot_vector) -> int{
     int n_elems = 0; // Number of elements
-    for (size_t i = 1; i < static_cast<size_t>(knot_vector.cols()); i++)
+    for (size_t i = 1; i < static_cast<size_t>(knot_vector.size()); i++)
     {
         if (knot_vector[i-1] != knot_vector[i]){
             n_elems = n_elems+1;
@@ -100,7 +100,7 @@ para_topo<NodeIndex> gen_topo(const Double_Vector & knotVec, const int & no_elem
     float currentKnotVal, previousKnotVal;
     previousKnotVal = 0.0;
 
-    for (int i = 0; i < knotVec.cols(); i++)
+    for (int i = 0; i < knotVec.size(); i++)
     {
         currentKnotVal = knotVec(i);
         if (knotVec(i) != previousKnotVal){
@@ -142,94 +142,6 @@ para_topo<NodeIndex> gen_topo(const Double_Vector & knotVec, const int & no_elem
 
     para_topo<NodeIndex> topo(util_elRange, util_elConn);
     return topo;
-}
-
-
-// Extraction operation
-std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot){
-    int knot_len = knot.cols();
-    float nume, alpha;
-    int i, j, r, s, k, save, mult;
-    int m = knot_len-utils_p-1;
-    // int num_elems = std::set<Scalar>(knot.array().data(), knot.array().data()+knot.array().size()).size() - 1;
-    int a = utils_p+1;
-    int b = a+1;
-    int nb = 0;
-    std::vector<Double_Matrix> C(num_elems);
-    Double_Matrix ones = Double_Matrix::Identity(utils_p+1, utils_p+1);
-    C[0] = ones;
-    Double_Vector alphas(utils_p+1);
-    while (b <= m) {
-        C[nb+1] = ones;
-        i = b;
-        while ((b <= m) && (knot[b] == knot[b-1])) { b = b+1; }
-        mult = b - i + 1;
-        if (mult < utils_p){
-            nume = knot[b-1] - knot[a-1];
-            for (j = utils_p; j > mult; j--) {
-                alphas[j-mult] = nume/(knot[a+j-1]-knot[a-1]);
-            }
-            r = utils_p-mult;
-            for (j = 1; j < r+1; ++j) {
-                save = r-j+1;
-                s = mult + j;
-                for (k = utils_p+1; k > s; k--) {
-                    alpha = alphas[k-s];
-                    C[nb].col(k-1) = alpha * C[nb].col(k-1) + (1 - alpha) * C[nb].col(k-2);
-                }
-                if (b <= m) {
-                    // C[nb+1](Eigen::seq(save-1, save+j-1), save-1) = C[nb](Eigen::seq(p-j, p), p);
-                    // instead of using "Eiigen::seq" function below loop is used.
-                    for (int itr = 0; itr <= j; itr++){
-                        C[nb+1](save-1+itr, save-1) = C[nb](utils_p-j+itr, utils_p);
-                    }
-                }
-            }
-            nb = nb+1;
-            if (b<= m){
-                a = b;
-                b = b+1;
-            }
-        }
-        else if (mult == utils_p){
-            if (b <= m){
-                nb = nb+1;
-                a = b;
-                b = b + 1;
-            }
-        }
-    }
-    return C;
-}
-
-// Matrix Tensor Product
-Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B) {
-    /*
-    a = []; b = []
-
-    a11 * b   a12 * b . . .
-
-    a21 * b   a22 * b . . .
-    .            .    .
-    .            .      .
-    .            .        .
-
-    */
-    const int Ar = A.rows();
-    const int Ac = A.cols();
-    const int Br = B.rows();
-    const int Bc = B.cols();
-
-    Double_Matrix M(Ar*Br, Ar*Br);
-
-    for (int k = 0; k < Ar; k++){
-        for (int l = 0; l < Ac; l++){
-            for (int i = 0; i < Br; i++){
-                for (int j = 0; j < Bc; j++){
-                    // std::cout << i + k*Br << "-" << j + l * Bc << "\n";
-                    M(i + k*Br, j + l * Bc) = B(i,j) * A(k,l);
-    }}}}
-    return M;
 }
 
 }  // Utils namespace
@@ -313,7 +225,6 @@ public:
 
         // generate Topology
         init_topo();
-        init_extraction();
     }
 
     void init_topo(void){
@@ -344,22 +255,9 @@ public:
         }
     }
 
-    void init_extraction(void){
-        C1 = utils::extraction(p, nelems_u, knot_u);
-        C2 = utils::extraction(q, nelems_v, knot_v);
-    }
-
-    Double_Matrix GetExtraction(const int& elem_index){
-        if (elem_index > t_nelems)
-            throw std::invalid_argument("Element index shouldn't exceed total number of elements");
-
-        int index_u = elem_index%(p+1);
-        int index_v = elem_index/(p+1);
-        return utils::kron(C2[index_v], C1[index_u]);
-    }
 
 //    IGACellType GetCellType(void) const {return BezierSurf;};
-    int GetExtractionSize(void) const {return (p+1)*(q+1);};
+    int GetNodesPerElement(void) const {return (p+1)*(q+1);};
     int GetP(void) const {return p;};                                  // Degree p
     int GetQ(void) const {return q;};                                  // Degree q
     int GetReadDim(void) {return rdim;};                               // Dimensions of control points
@@ -372,13 +270,24 @@ public:
     int GetNumberOfElements(void) const {return t_nelems;};            // Total no of elements
     Double_Vector get_knot_u(void) const {return knot_u;};             // Knot vector u
     Double_Vector get_knot_v(void) const {return knot_v;};             // Knot vector v
+    int get_knot_u_size(void) const {return knot_u.size();};             // Knot vector u
+    int get_knot_v_size(void) const {return knot_v.size();};             // Knot vector v
     Double_Matrix GetPoints() const {return pnts;};                    // Control points
     Double_Vector GetPoint(const UNSIGNED_INTEGER_TYPE & i) const {return pnts.row(i);};     // Control points
     Double_Vector GetWeights(void) const {return wgts;};               // Weights
     FLOATING_POINT_TYPE GetWeight(const UNSIGNED_INTEGER_TYPE & i) const {return wgts(i);};
     Double_Matrix GetKnotRanges(void) const {return elRange;};          // Element parametric range
     Matrix<NodeIndex> GetIndices(void) const {return elConn;};                 // Element connectivity
-
+    void print_core_nurbs(void){
+        std::cout << "P and q : " << p << " " << q << "\n";
+        std::cout << "Knot U  : " << knot_u.transpose() << "\n";
+        std::cout << "Knot V  : " << knot_v.transpose() << "\n";
+        std::cout << "Points in U & V  : " << cp_u << " " << cp_v << "\n";
+        std::cout << "Elems in U & V  : " << nelems_u << " " << nelems_v << "\n";
+        std::cout << "Total Elems : " << t_nelems << "\n";
+        std::cout << "Points \n" << pnts.transpose() << "\n";
+        std::cout << "Weights \n" << wgts.transpose() << "\n";
+    }
 private:
     std::string p_filename;
     int pdim, rdim;
@@ -390,13 +299,6 @@ private:
     Int_Matrix global_indices;
     Double_Matrix elRange;
     Matrix<NodeIndex> elConn;
-    std::vector<Double_Matrix> C1, C2;
-//    auto no_nonzeros(const Double_Vector & vect) -> int;
-//    auto num_elements(const Double_Vector & knot_vector) -> int;
-//    para_topo gen_topo(const Double_Vector & knotVec, const int & no_elems, const int & p);
-//    std::vector<Double_Matrix> extraction(const int& utils_p, const int& num_elems, const Double_Vector & knot);
-//    Double_Matrix kron(const Double_Matrix & A, const Double_Matrix & B);
-
 };
 
 
