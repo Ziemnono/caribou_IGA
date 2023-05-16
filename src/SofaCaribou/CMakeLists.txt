@@ -8,7 +8,7 @@ set(HEADER_FILES
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h
     Forcefield/CaribouForcefield.h
-    Forcefield/CaribouSplineForcefield.h
+#    Forcefield/CaribouSplineForcefield.h
     Forcefield/CaribouForcefield[Hexahedron].h
     Forcefield/CaribouForcefield[Hexahedron20].h
     Forcefield/CaribouForcefield[Quad].h
@@ -64,7 +64,7 @@ set(HEADER_FILES
     Topology/CaribouTopology[Triangle].h
     Topology/CaribouTopology[Triangle6].h
     # CaribouSplineTopology
-    Topology/CaribouSplineTopology[BezierSurf].h
+    Topology/CaribouSplineTopology[NurbsSurf].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -77,7 +77,7 @@ set(HEADER_FILES
 
 set(TEMPLATE_FILES
     Forcefield/CaribouForcefield.inl
-    Forcefield/CaribouSplineForcefield.inl
+#    Forcefield/CaribouSplineForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
     Mapping/CaribouBarycentricMapping.inl
@@ -140,7 +140,7 @@ set(SOURCE_FILES
     Topology/CaribouTopology[Triangle].cpp
     Topology/CaribouTopology[Triangle6].cpp
     # CaribouSplineTopology
-    Topology/CaribouSplineTopology[BezierSurf].cpp
+    Topology/CaribouSplineTopology[NurbsSurf].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp

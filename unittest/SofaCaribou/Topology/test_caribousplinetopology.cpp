@@ -14,7 +14,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/Node.h>
 DISABLE_ALL_WARNINGS_BEGIN
 
-#include <SofaCaribou/Topology/CaribouSplineTopology[BezierSurf].h>
+#include <SofaCaribou/Topology/CaribouSplineTopology[NurbsSurf].h>
 
 #include <Caribou/Topology/SplinePatch.h>
 #include <Caribou/Topology/IO/NURBSReader.h>
@@ -33,7 +33,7 @@ using namespace sofa::helper::testing;
 using namespace sofa::testing;
 #endif
 
-TEST(CaribouSplineTopology, BezierSurf2DAttachPatch) {
+TEST(CaribouSplineTopology, NurbsSurf2DAttachPatch) {
 
     using namespace caribou;
     using namespace caribou::topology;
@@ -62,8 +62,8 @@ TEST(CaribouSplineTopology, BezierSurf2DAttachPatch) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>> *> (
-            createObject(root, "CaribouSplineTopology", {{"template", "BezierSurf_2D"}}).get() );
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>> *> (
+            createObject(root, "CaribouSplineTopology", {{"template", "NurbsSurf_2D"}}).get() );
     EXPECT_NE(topo, nullptr);
     std::cout << "\n ----------------------  TOPO IS CREATED\n";
     // Attach the spline patch
@@ -75,7 +75,7 @@ TEST(CaribouSplineTopology, BezierSurf2DAttachPatch) {
 //    EXPECT_EQ(indices.size(), 16); // Number of elements
     std::cout << "\n Inidices starts : " << indices.size() << "\n END \n";
 
-    using real_val = SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>>::Real;
+    using real_val = SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>>::Real;
     using Dataknots = Data<sofa::type::vector<sofa::type::fixed_array<real_val, 4>>>;
     auto knots = ReadAccessor<Dataknots> (dynamic_cast<Dataknots*>(topo->findData("knots")));
     std::cout << "\n Knots starts : " << knots[0] << "\n END \n";
@@ -87,7 +87,7 @@ TEST(CaribouSplineTopology, BezierSurf2DAttachPatch) {
 //    auto extras = ReadAccessor<Dataextrs> (dynamic_cast<Dataextrs*>(topo->findData("extractions")));
 //    std::cout << "\n Extraaction matrix Start : \n" << extras[0][0] << "\n"; // First row
 
-    using vcord = SofaCaribou::topology::CaribouSplineTopology<BezierSurf<_2D>>::VecCoord;
+    using vcord = SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>>::VecCoord;
     using Datapositions = Data<vcord>;
     auto positions = ReadAccessor<Datapositions> (dynamic_cast<Datapositions*>(topo->findData("position")));
     std::cout << "\n Positions 1 : \n" << positions[0] << "\n"; // First row
