@@ -21,7 +21,7 @@ CaribouSplineTopology<Element>::CaribouSplineTopology ()
     "indices",
     "Node indices (w.r.t the position vector) of each elements."))
 , d_knot_spans(initData(&d_knot_spans,
-    "knots",
+    "knot_spans",
     "Knot span of each elements"))
 , d_weights(initData(&d_weights,
     "weights",
