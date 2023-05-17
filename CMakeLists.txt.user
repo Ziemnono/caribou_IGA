@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 8.0.1, 2023-05-16T17:57:37. -->
+<!-- Written by QtCreator 8.0.1, 2023-05-17T10:23:31. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -114,6 +114,8 @@
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/ODE/test_static.cpp:InitSofaSolver">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/ODE/test_static.cpp:InitWithoutSolver">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/ODE/test_static.cpp:StaticODESolver">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:CaribouSplineTopology">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:NurbsSurf2DAttachPatch">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:FictitiousGrid">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:Liver">Checked</value>
    </valuemap>

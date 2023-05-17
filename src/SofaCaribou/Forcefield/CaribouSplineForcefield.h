@@ -80,7 +80,7 @@ public:
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
 
-    void draw(const sofa::core::visual::VisualParams* vparams) override;
+//    void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     /** Get the number of elements contained in this field **/
     [[nodiscard]] inline
@@ -102,7 +102,7 @@ private:
      * @param triangles_nodes [output] The position of each triangle nodes that will have to be draw to correctly represent the
      *                        face (visually).
      */
-    void triangulate_face(const Element & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
+//    void triangulate_face(const Element & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
 
     // Data members
     /// This link is specifically set to point towards a very general BaseObject since it can be either a
