@@ -267,7 +267,7 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     }
 
-    Scalar jacobian_parent2para(const LocalCoordinates & xi){
+    Scalar jacobian_p2p(){
         auto Jxi = 0.5 * (this->p_knot_span[2] - this->p_knot_span[0]);
         auto Jeta = 0.5 * (this->p_knot_span[3] - this->p_knot_span[1]);
         return Jxi * Jeta;
@@ -356,12 +356,6 @@ private:
         Dyn_Vector dB_dv_B2 = this->p_weights.array() * deris.col(1).array();
         double dB_dv_w2 = dB_dv_B2.sum();
         deris.col(1) = dB_dv_B2/w1 - B1 * dB_dv_w2/(w1*w1);
-
-//        deris = deris * 0.25 * (this->p_knot_span[2] - this->p_knot_span[0])
-//                * (this->p_knot_span[3] - this->p_knot_span[1]);
-//        std::cout << "\n Final deris \n" <<  deris << "\n";
-
-//        std::cout << "This is the end \n";
 
         return deris;
     };
