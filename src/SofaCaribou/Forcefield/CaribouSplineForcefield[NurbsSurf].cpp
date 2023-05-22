@@ -20,7 +20,7 @@ namespace SofaCaribou::forcefield {
 // 2D
 template <>
 auto CaribouSplineForcefield<NurbsSurf<_2D>>::templateName(const CaribouSplineForcefield<NurbsSurf<_2D>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<NurbsSurf<_2D>>::templateName();
+    return SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>>::templateName();
 }
 // This will force the compiler to compile the following templated class
 template class CaribouSplineForcefield<NurbsSurf<_2D>>;
@@ -28,7 +28,7 @@ template class CaribouSplineForcefield<NurbsSurf<_2D>>;
 // 3D
 template <>
 auto CaribouSplineForcefield<NurbsSurf<_3D>>::templateName(const CaribouSplineForcefield<NurbsSurf<_3D>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<NurbsSurf<_3D>>::templateName();
+    return SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_3D>>::templateName();
 }
 
 // This will force the compiler to compile the following templated class

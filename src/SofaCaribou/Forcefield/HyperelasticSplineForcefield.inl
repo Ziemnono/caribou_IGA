@@ -459,12 +459,12 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::Matr
 
             Matrix<3, NumberOfNodesPerElement*2> B;
 
-//            % B matrix
-//            %        _                                      _
-//            %        |  N_1,x  N_2,x  ...      0     0  ... |
-//            %  B  =  |      0      0  ... N_1,y  N_2,y  ... |
-//            %        |  N_1,y  N_2,y  ... N_1,x  N_2,x  ... |
-//            %        -                                      -
+            // B matrix
+            //        _                                      _
+            //        |  N_1,x  N_2,x  ...      0     0  ... |
+            //  B  =  |      0      0  ... N_1,y  N_2,y  ... |
+            //        |  N_1,y  N_2,y  ... N_1,x  N_2,x  ... |
+            //        -                                      -
             B(0, Eigen::seq(0,NumberOfNodesPerElement-1)) = dN_dx.col(0);
             B(1, Eigen::seq(NumberOfNodesPerElement, 2*NumberOfNodesPerElement-1)) = dN_dx.col(1);
             B(2, Eigen::seq(0,NumberOfNodesPerElement-1)) = dN_dx.col(1);
