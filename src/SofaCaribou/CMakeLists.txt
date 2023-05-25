@@ -24,6 +24,11 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield[Hexahedron20].h
     Forcefield/HyperelasticForcefield[Tetrahedron].h
     Forcefield/HyperelasticForcefield[Tetrahedron10].h
+
+    # Hyper elastic spline forcefield
+    Forcefield/ElasticSplineForcefield.h
+    Forcefield/ElasticSplineForcefield[NurbsSurf].h
+
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
@@ -81,6 +86,10 @@ set(TEMPLATE_FILES
     Forcefield/CaribouSplineForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
+
+    # Hyper elastic spline forcefield
+    Forcefield/ElasticSplineForcefield.inl
+
     Mapping/CaribouBarycentricMapping.inl
     Mass/CaribouMass.inl
     Solver/ConjugateGradientSolver.inl
@@ -110,6 +119,10 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield[Hexahedron20].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
+
+    # Hyper elastic spline forcefield
+    Forcefield/ElasticSplineForcefield[NurbsSurf].cpp
+
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
     Forcefield/TractionForcefield[Quad8].cpp
