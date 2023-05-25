@@ -95,7 +95,7 @@ TEST(NURBSReader, plate_hole_integration){
             const auto x = g.position;
             const auto w = g.weight;
             const auto detJ = nurbs_elem.jacobian(x).determinant();
-            auto jp2p  = nurbs_elem.jacobian_p2p();
+            auto jp2p  = nurbs_elem.jacobian_papa();
             const auto N = nurbs_elem.world_coordinates(x);
             tval = tval + N * jp2p * detJ * w;
         }

@@ -267,11 +267,13 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     }
 
-    Scalar jacobian_p2p(){
+    inline auto jacobian_papa() -> Scalar {
         auto Jxi = 0.5 * (this->p_knot_span[2] - this->p_knot_span[0]);
         auto Jeta = 0.5 * (this->p_knot_span[3] - this->p_knot_span[1]);
         return Jxi * Jeta;
     }
+
+
 private:
     // Implementations
     friend struct Element<NurbsSurf <_Dimension>>;
