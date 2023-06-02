@@ -120,83 +120,6 @@ public:
      */
     SplinePatch() : p_nodes {}, p_weights {}, p_indices{}, p_knotranges{} {}
 
-//    /*!
-//     * Virtual default destructor
-//     */
-//    virtual ~SplinePatch() = default;
-
-    /**
-     * Construct the unstructured mesh with a set of point positions from a position vector.
-     * @param positions A reference to a std::vector containing the position of the nodes
-     *
-     * @note A copy is made of all nodes position vectors is made.
-     */
-    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const std::vector<FLOATING_POINT_TYPE> & weights)
-    {
-        const auto n = positions.size();
-        const auto n_weights = weights.size();
-        if (n != n_weights){
-            throw("Number of nodes should match with number of weights");
-        }
-        p_nodes.resize(n);
-        p_weights.resize(n);
-        for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
-            auto node = this->p_nodes.node(i);
-            p_weights(i) = weights[i];
-            for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
-                node[j] = positions[i][j];
-            }
-        }
-    }
-
-    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const DynVector & weights)
-    {
-        const auto n = positions.size();
-//        const auto n_weights = weights.size();
-//        if (n != n_weights){
-//            throw("Number of nodes should match with number of weights");
-//        }
-        p_nodes.resize(n);
-        p_weights.resize(n);
-        for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
-            auto node = this->p_nodes.node(i);
-            p_weights(i) = weights(i);
-            for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
-                node[j] = positions[i][j];
-            }
-        }
-    }
-
-    /**
-     * Construct the unstructured mesh with an Eigen matrix containing the position vector
-     * (NxD with N nodes of D world dimension).
-     *
-     * @param positions A reference to a NxD matrix containing the position vector
-     */
-    template <typename Derived>
-    explicit SplinePatch(const Eigen::MatrixBase<Derived> & positions, const DynVector & weights)
-    {
-        static_assert(
-            Eigen::MatrixBase<Derived>::ColsAtCompileTime == Dimension or Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic,
-            "The number of columns at compile time should match the Dimension of the mesh, or by dynamic (known at compile time)."
-        );
-
-        // The number of columns must equal the World dimension
-        caribou_assert(positions.cols() == Dimension);
-
-        // Do the copy
-        const auto n = positions.rows();
-        p_nodes.resize(n);
-        p_weights.resize(n); // Resizing the p_weight vector
-        for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
-            auto node = this->p_nodes.node(i);
-            p_weights(i) = weights(i); // Weight holder
-            for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
-                node[j] = positions(i,j);
-            }
-        }
-    }
-
     // ================== Our specialization starts =========================
 
     explicit SplinePatch(const NodeContainer_t & positions, const DynVector & weights,
@@ -204,29 +127,6 @@ public:
         p_nodes(positions), p_weights(weights), p_indices(indices), p_knot_1(knot_1), p_knot_2(knot_2), p_knotranges(knotrange)
     {
         std::cout << "\n1st constructor \n";
-    }
-
-
-    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const DynVector & weights,
-                         const ElementsIndices & indices, const ElementsKnotrange & knotrange)
-    {
-        std::cout << "\n2nd constructor \n";
-        const int n = positions.size();
-        const int n_weights = weights.size();
-        if (n != n_weights){
-            throw("Number of nodes should match with number of weights");
-        }
-        p_nodes.resize(n);
-        p_weights.resize(n);
-        for (int i = 0; i < n; ++i) {
-            auto node = this->p_nodes.node(i);
-            p_weights(i) = weights(i);
-            for (int j = 0; j < static_cast<int>(Dimension); ++j) {
-                node[j] = positions[i][j];
-            }
-        }
-        p_indices = indices;
-        p_knotranges = knotrange;
     }
 
     template <typename Derived>
@@ -512,7 +412,7 @@ public:
      * @param indices [IN] he indices from which the positions array will be filled
      * @return The position coordinates of every nodes queried as an Eigen dense matrix.
      *
-     * Example:
+     * Example. :
      * \code{.cpp}
      * using Nodes = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Dimension, Eigen::RowMajor>;
      * std::vector<int> indices = {55, 62};
