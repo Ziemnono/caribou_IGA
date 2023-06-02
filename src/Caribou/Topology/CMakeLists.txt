@@ -13,7 +13,6 @@ set(HEADER_FILES
     HashGrid.h
     Mesh.h
     IO/CoreNURBS.h
-    IO/IGACellType.h
     BaseSplinePatch.h
     SplinePatch.h
 )
