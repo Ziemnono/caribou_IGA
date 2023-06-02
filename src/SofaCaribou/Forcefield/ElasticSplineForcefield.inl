@@ -376,6 +376,7 @@ void ElasticSplineForcefield<Element>::initialize_elements()
 
         // Fill in the Gauss integration nodes for this element
         p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
+        p_jacobian_pp[element_id] = initial_element.jacobian_papa();
     }
 
     // Compute the volume
@@ -454,6 +455,9 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
 
+        // Jacobian para to parent
+        const auto J2 = p_jacobian_pp[element_id];
+
         for (const auto & gauss_node : gauss_nodes_of(element_id)) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
@@ -473,7 +477,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
                 B(2, NumberOfNodesPerElement + i) = dN_dx(i, 0);
             }
 
-            Ke = Ke + B.transpose() * p_C * B * detJ * w;
+            Ke = Ke + B.transpose() * p_C * B * detJ * J2 * w;
 
 
         }
