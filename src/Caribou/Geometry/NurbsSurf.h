@@ -267,7 +267,7 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     }
 
-    inline auto jacobian_papa() -> Scalar {
+    inline auto jacobian_papa() const -> Scalar {
         auto Jxi = 0.5 * (this->p_knot_span[2] - this->p_knot_span[0]);
         auto Jeta = 0.5 * (this->p_knot_span[3] - this->p_knot_span[1]);
         return Jxi * Jeta;
