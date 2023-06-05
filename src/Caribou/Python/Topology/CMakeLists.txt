@@ -18,6 +18,7 @@ set(SOURCE_FILES
     Grid.cpp
     HashGrid.cpp
     Mesh.cpp
+    SplinePatch.cpp
     IO/IO.cpp
     Topology.cpp
 )
