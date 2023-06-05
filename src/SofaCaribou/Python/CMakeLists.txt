@@ -14,6 +14,9 @@ set(HEADER_FILES
     Solver/LUSolver.h
     Topology/CaribouTopology.h
     Topology/FictitiousGrid.h
+
+    Topology/CaribouSplineTopology.h
+    Forcefield/ElasticSplineForcefield.h
 )
 
 set(SOURCE_FILES
@@ -29,6 +32,9 @@ set(SOURCE_FILES
     Solver/LUSolver.cpp
     Topology/CaribouTopology.cpp
     Topology/FictitiousGrid.cpp
+
+    Topology/CaribouSplineTopology.cpp
+    Forcefield/ElasticSplineForcefield.cpp
 )
 
 set(PYTHON_FILES
