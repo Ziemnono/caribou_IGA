@@ -11,6 +11,7 @@ void create_hexahedron(pybind11::module & m);
 void create_rectangular_hexahedron(pybind11::module & m);
 void create_bezier_crv(pybind11::module & m);
 void create_bezier_surf(pybind11::module & m);
+void create_nurbs_surf(pybind11::module & m);
 }
 
 PYBIND11_MODULE(Geometry, m) {
@@ -25,4 +26,5 @@ PYBIND11_MODULE(Geometry, m) {
     caribou::geometry::bindings::create_rectangular_hexahedron(m);
     caribou::geometry::bindings::create_bezier_crv(m);
     caribou::geometry::bindings::create_bezier_surf(m);
+    caribou::geometry::bindings::create_nurbs_surf(m);
 }

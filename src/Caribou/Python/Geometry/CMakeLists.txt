@@ -23,6 +23,7 @@ set(SOURCE_FILES
     Spline.cpp
     BezierCrv.cpp
     BezierSurf.cpp
+    NurbsSurf.cpp
 )
 
 caribou_add_python_module(Geometry

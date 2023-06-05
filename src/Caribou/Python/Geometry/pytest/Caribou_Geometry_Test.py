@@ -35,6 +35,20 @@ def p2(p):
     else:
         return 5 + 2*p[0]*p[1] + 3*p[1]*p[2]+ 4*p[2]*p[2]
 
+
+class TestNurbsSurf(unittest.TestCase):
+    def test_constructor_quadratic(self):
+        nodes = [[0, 0], [0, 1], [0, 2],
+                 [1, 0], [1, 1], [1, 2],
+                 [2, 0], [2, 1], [2, 2]]
+
+        knot1 = [0, 0, 0, 0.5, 1, 1, 1]
+        knot2 = knot1
+        weights = [1,1,1,1,1,1,1,1,1]
+        knotspan = [0, 0, 1, 1]
+        s = NurbsSurf(nodes, knot1, knot2, weights, knotspan)
+        print("Jacobina papa is"
+        print(s.jacobian_papa())
 class TestSpline(unittest.TestCase):
 
     def assertMatrixEqual(self, A, B):
