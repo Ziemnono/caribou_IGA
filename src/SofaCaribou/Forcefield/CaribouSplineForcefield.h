@@ -3,6 +3,8 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/CaribouSplineTopology.h>
 
+#include <SofaCaribou/Forcefield/CaribouForcefield.h>
+
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/behavior/ForceField.h>
@@ -25,11 +27,11 @@ namespace sofa::type { using Vector3 = ::sofa::defaulttype::Vector3; }
 
 namespace SofaCaribou::forcefield {
 
-// Traits to get the Sofa vector type from the dimension
-template <std::size_t Dim> struct SofaVecType {};
-template <> struct SofaVecType<1> { using Type = sofa::defaulttype::Vec1Types; };
-template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; };
-template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
+//// Traits to get the Sofa vector type from the dimension
+//template <std::size_t Dim> struct SofaVecType {};
+//template <> struct SofaVecType<1> { using Type = sofa::defaulttype::Vec1Types; };
+//template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; };
+//template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
 
 template <typename Element>
 class CaribouSplineForcefield : public sofa::core::behavior::ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {

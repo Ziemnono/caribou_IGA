@@ -428,7 +428,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto Id = Mat22::Identity();
+//    static const auto Id = Mat22::Identity();
     const auto nb_elements = this->number_of_elements();
     const auto nb_nodes = x.rows();
     const auto nDofs = nb_nodes*Dimension;
