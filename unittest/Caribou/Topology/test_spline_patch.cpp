@@ -43,10 +43,10 @@ TEST (Splinepatch, XY_RECTANGLE) {
     knot_ranges << 0, 0.5, 1, 1;
 
     Double_Vector knot1(6);
-    weights << 0, 0, 0, 1, 1, 1;
+    knot1 << 0, 0, 0, 1, 1, 1;
 
     Double_Vector knot2(6);
-    weights <<  0, 0, 0, 1, 1, 1;
+    knot1 <<  0, 0, 0, 1, 1, 1;
 
     EXPECT_EQ(2,2);
 
