@@ -18,10 +18,15 @@ void declare_nurbs_surf(py::module & m, const std::string & name) {
     // BaseNurbsSurf
     std::string base_name = "Base" + name;
     declare_element<NurbsSurfType>(m, base_name);
-    py::class_<BaseNurbsSurfType, Element<NurbsSurfType>> (m, base_name.c_str());
+    py::class_<BaseNurbsSurfType, Element<NurbsSurfType>> (m, base_name.c_str())
+            .def("jacobian_papa", &BaseNurbsSurfType::jacobian_papa);
 
     // NurbsSurf
     py::class_<NurbsSurfType, BaseNurbsSurfType> c (m, name.c_str());
+//    c.def("jacobian_papa", &BaseNurbsSurfType::jacobian_papa);
+
+    c.def("aa", &NurbsSurfType::aa);
+
     c.def("__str__", [&name](const NurbsSurfType & s) {
         Eigen::IOFormat f(std::numeric_limits<double>::digits10 + 2, 0, ", ", ", ", "[", "]", "[", "]");
         if constexpr(caribou::geometry::traits<NurbsSurfType>::Dimension == 1) {
@@ -39,19 +44,14 @@ void create_nurbs_surf(pybind11::module & m) {
 
     declare_nurbs_surf<NurbsSurf<_2D>>(m, "NurbsSurf_2D");
 
-    declare_nurbs_surf<NurbsSurf<_3D>>(m, "NurbsSurf_3D");
-
     m.def("NurbsSurf", [](){
         return py::cast(NurbsSurf<_2D>());
     });
 
 
     m.def("NurbsSurf", [](const caribou::bindings::Dimension & dim) {
-        if (dim == caribou::bindings::Dimension::_2D) {
-            return py::cast(NurbsSurf<_2D>());
-        } else {
-            return py::cast(NurbsSurf<_3D>());
-        }
+        return py::cast(NurbsSurf<_2D>());
+
     }, py::arg("dimension"));
 
     using dyn_vec = NurbsSurf<_2D>::Dyn_Vector;
@@ -63,17 +63,6 @@ void create_nurbs_surf(pybind11::module & m) {
         return py::cast(NurbsSurf<_2D>(nodes, knot_1, knot_2, weights, knot_span));
     }, py::arg("nodes"), py::arg("knot_1"), py::arg("knot_2"), py::arg("weights"), py::arg("knot_span"));
 
-    m.def("jacobian_papa", &NurbsSurf<_2D>::jacobian_papa);
-
-    // 3D
-
-    m.def("NurbsSurf", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 9, 3> & nodes, dyn_vec knot_1,
-          const dyn_vec knot_2, const dyn_vec weights, const dyn_vec knot_span)
-    {
-        return py::cast(NurbsSurf<_3D>(nodes, knot_1, knot_2, weights, knot_span));
-    }, py::arg("nodes"), py::arg("knot_1"), py::arg("knot_2"), py::arg("weights"), py::arg("knot_span"));
-
-    m.def("jacobian_papa", &NurbsSurf<_3D>::jacobian_papa);
 }
 
 }

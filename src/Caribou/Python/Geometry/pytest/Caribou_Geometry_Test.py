@@ -16,6 +16,7 @@ from Caribou.Geometry import Quad, Quad8
 from Caribou.Geometry import Triangle, Triangle6
 from Caribou.Geometry import Tetrahedron, Tetrahedron10
 from Caribou.Geometry import Hexahedron, Hexahedron20
+from Caribou.Geometry import NurbsSurf
 
 
 def p1(p):
@@ -37,18 +38,18 @@ def p2(p):
 
 
 class TestNurbsSurf(unittest.TestCase):
-    def test_constructor_quadratic(self):
+    def test_nurbs(self):
         nodes = [[0, 0], [0, 1], [0, 2],
                  [1, 0], [1, 1], [1, 2],
                  [2, 0], [2, 1], [2, 2]]
 
-        knot1 = [0, 0, 0, 0.5, 1, 1, 1]
+        knot1 = [0, 0, 0, 1, 1, 1]
         knot2 = knot1
         weights = [1,1,1,1,1,1,1,1,1]
         knotspan = [0, 0, 1, 1]
         s = NurbsSurf(nodes, knot1, knot2, weights, knotspan)
-        print("Jacobina papa is"
-        print(s.jacobian_papa())
+        self.assertEqual(s.jacobian_papa(), 0.25)
+
 class TestSpline(unittest.TestCase):
 
     def assertMatrixEqual(self, A, B):

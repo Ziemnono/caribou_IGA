@@ -62,6 +62,12 @@ struct BaseNurbsSurf : public Element<Derived> {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
+    inline auto jacobian_papa() const -> Scalar {
+        auto Jxi = 0.5 * (p_knot_span[2] - p_knot_span[0]);
+        auto Jeta = 0.5 * (p_knot_span[3] - p_knot_span[1]);
+        return Jxi * Jeta;
+    }
+
 private:
     // Implementations
     friend struct Element<Derived>;

@@ -43,7 +43,7 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     using Scalar = FLOATING_POINT_TYPE;
 
-    using Base = BaseNurbsSurf<NurbsSurf <_Dimension>>;
+    using Base = BaseNurbsSurf<NurbsSurf<_Dimension>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -267,11 +267,11 @@ struct NurbsSurf: public BaseNurbsSurf<NurbsSurf <_Dimension>> {
 
     }
 
-    inline auto jacobian_papa() const -> Scalar {
-        auto Jxi = 0.5 * (this->p_knot_span[2] - this->p_knot_span[0]);
-        auto Jeta = 0.5 * (this->p_knot_span[3] - this->p_knot_span[1]);
-        return Jxi * Jeta;
+    auto aa(void) const -> int{
+        return 555;
     }
+
+
 
 
 private:
