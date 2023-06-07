@@ -259,6 +259,9 @@ public:
 
     // =============================== Domain helpers Start ===========================
 
+    inline auto indices(void) const -> ElementsIndices {
+        return p_indices;
+    }
     inline auto element_indices(const UNSIGNED_INTEGER_TYPE & index) const {
         caribou_assert(index < number_of_elements() and "Trying to get an element that does not exists.");
 
@@ -350,7 +353,22 @@ public:
         return p_weights(node_id);
     }
 
+    inline  auto all_positions(void) const ->Double_Matrix {
+        Double_Matrix positions;
+        positions.resize(number_of_nodes(), Dimension);
+        for (int i = 0; i < static_cast<int>(number_of_nodes()); ++i) {
+            auto node = p_nodes.node(i);
+            for (int j = 0; j < static_cast<int>(Dimension); ++j) {
+                positions(i,j) = static_cast<FLOATING_POINT_TYPE>(node(j));
+            }
 
+        }
+        return positions;
+    }
+
+    inline  auto positions(void) const ->NodeContainer_t {
+        return p_nodes;
+    }
     /*!
     * Get the position coordinates of a node from its index.
     */
@@ -532,7 +550,13 @@ public:
         return weights;
     }
 
+    inline auto aa() const {
+        return 55;
+    }
     inline auto weights() const {
+        return p_weights;
+    }
+    inline auto all_weights() const {
         return p_weights;
     }
     // ===================== Weights ===============================

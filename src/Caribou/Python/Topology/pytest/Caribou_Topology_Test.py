@@ -12,7 +12,6 @@ sys.path.insert(0, str(site_packages_dir))
 print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
 from Caribou.Topology import SplinePatch
-from Caribou.Topology.Io import VTKReader
 from Caribou.Topology import Mesh
 from Caribou.Topology import Grid3D
 from Caribou.Geometry import Segment, Segment3
@@ -45,6 +44,15 @@ class TestSpline(unittest.TestCase):
     s = SplinePatch(nodes, weights, indices, knot1, knot2, knot_ranges)
     print("I am in SplinePatch Python")
     print(s.knot_1())
+
+    print("positions")
+    print(s.all_positions())
+
+    print("weights")
+    print(s.all_weights())
+
+    print("indices")
+    print(s.indices())
 
 class TestMesh(unittest.TestCase):
 

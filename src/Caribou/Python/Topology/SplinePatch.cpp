@@ -33,12 +33,19 @@ void declare_splinepatch(py::module & m){
         return m.positions(indices);
     }, py::arg("indices").noconvert());
 
+    c.def("all_positions", &M::all_positions);
     // Spline functions
+
+    c.def("indices", &M::indices);
 
     // Weights
 //    c.def("weights", [](const S & s, const std::vector<UNSIGNED_INTEGER_TYPE> & indices) {
 //        return s.weights(indices);
 //    }. py::arg("indices").noconvert());
+
+    c.def("aa", &M::aa);
+
+    c.def("all_weights", &M::all_weights);
 
     c.def("weights", [](const M & m, const std::vector<INTEGER_TYPE> & indices) {
         return m.weights(indices);
