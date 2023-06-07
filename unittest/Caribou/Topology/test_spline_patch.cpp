@@ -75,13 +75,17 @@ TEST (Splinepatch, XY_RECTANGLE) {
     posi << initial_positions.block<2,2>(1,0);
     EXPECT_MATRIX_EQUAL(patch.positions({1,2}), posi );
 
-    EXPECT_EQ(patch.weight(4), 0.75);
+    EXPECT_EQ(patch.weight(4), 1);
 
     Double_Vector wgts;
     wgts.resize(2);
     wgts << 1, 1;
     EXPECT_MATRIX_EQUAL(patch.weights({4,5}), wgts );
     std::cout << "Weights \n " << patch.weights({0,1,2,3,4,5,6,7,8}) << "\n";
+
+    std::cout << "all weights " << patch.weights() << "\n";
+    std::cout << "all indices " << patch.indices() << "\n";
+    std::cout << "all positions " << patch.positions().node(0) << "\n";
 
 }
 
