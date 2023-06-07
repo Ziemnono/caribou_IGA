@@ -1,8 +1,18 @@
+import sys, os
+from pathlib import Path
+
+current_dir = Path(__file__).parent
+site_packages_dir = (current_dir / '..' / 'build' / 'lib' / 'python3' / 'site-packages').resolve()
+sys.path.insert(0, str(site_packages_dir))
+print(f'Adding {site_packages_dir} to sys.path')
+
 import Sofa
 import SofaCaribou
 import numpy as np
 #import Caribou.Geometry
+import Caribou
 from Caribou.Topology import SplinePatch
+
 
 ELEMENT_TYPE = "Tetrahedron"
 ELEMENT_APPROXIMATION_DEGREE = 1
@@ -10,18 +20,41 @@ MATERIAL_MODEL = "NeoHookean"
 FORCES = [0, -4000, 0]
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 
-nodes = [[0, 0], [0, 1], [0, 2],
-         [1, 0], [1, 1], [1, 2],
-         [2, 0], [2, 1], [2, 2]]
+nodes = np.array([[0., 0.], [1., 0.], [2., 0.], [0., 1.], [1., 1.],
+                  [2., 1.], [0., 2.], [1., 2.], [2., 2.]])
+nodes = np.array(nodes, dtype=np.float64)
+weights = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+weights =  np.array(weights, dtype=np.float64)
 
-knot1 = [0, 0, 0, 0.5, 1, 1, 1]
-knot2 = knot1
-weights = [1,1,1,1,1,1,1,1,1]
-knotspan = [0, 0, 1, 1]
-indices = [[0,1,2,3,4,5,6,7,8]]
+i_indices = np.array([0,1,2,3,4,5,6,7,8])
+i_indices = np.array(i_indices, dtype=np.uint64)
 
-patch = SplinePatch(nodes, weights, indices, knot1, knot2, knotranges)
-print(patch);
+knot_ranges = np.array([0.0, 0.0, 1.0, 1.0])
+knot_ranges = np.array(knot_ranges, dtype=np.float64)
+
+knot1 = np.array([0., 0., 0., 1., 1., 1.])
+knot1 = np.array(knot1, dtype=np.float64)
+
+knot2 = np.array([0., 0., 0., 1., 1., 1.])
+knot2 = np.array(knot2, dtype=np.float64)
+patch = SplinePatch(nodes, weights, i_indices, knot1, knot2, knot_ranges)
+#patch = SplinePatch(nodes, weights, i_indices, knot1, knot2, knotranges)
+
+#print("I am in Canti Python")
+#print(patch.knot_1().tolist())
+
+#print("positions")
+#print(patch.all_positions())
+
+#print("weights")
+#print(patch.all_weights())
+
+#print("indices")
+#print(patch.indices())
+
+element_type = "NurbsSurf_2D"
+
+FORCES = [0, 5, 0]
 
 if MATERIAL_MODEL == "SaintVenantKirchhoff" or MATERIAL_MODEL == "NeoHookean":
     material = MATERIAL_MODEL
@@ -47,16 +80,16 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
                             relative_residual_tolerance_threshold="1e-10", printLog="1")
         sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-        self.sofa_mo = sofa_node.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
-        sofa_node.addObject('CaribouSplineTopology', name='topo', template=element_sofa,
-                            indices=indices_sofa.tolist())
+        self.sofa_mo = sofa_node.addObject('MechanicalObject', name="mo", position=patch.all_positions().tolist())
+        sofa_node.addObject('CaribouSplineTopology', name='topo', template = element_type,
+                             indices=patch.indices().tolist(), knot_1 = patch.knot_1().tolist(),
+                             knot_2 = patch.knot_2().tolist(), weights = patch.all_weights().tolist(), knot_spans = knot_ranges.tolist())
 
 #        sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
-#        sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-#        sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-#        sofa_node.addObject('ConstantForceField', totalForce=FORCES, indices="@top_roi.indices")
-#        sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
-#        sofa_node.addObject('HyperelasticForcefield', printLog=True)
+        sofa_node.addObject('FixedConstraint', indices=[0, 1, 2])
+        sofa_node.addObject('ConstantForceField', totalForce=FORCES, indices=[6,7,8])
+        sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
+        sofa_node.addObject('ElasticSplineForcefield', template = element_type, printLog=True)
 
 
 #        fenics_node = root.addChild("fenics_node")
