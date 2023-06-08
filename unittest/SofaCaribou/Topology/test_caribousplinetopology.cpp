@@ -138,6 +138,7 @@ TEST(CaribouSplineTopology, NS2D_AttachPatch_PlateHole) {
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
 //    EXPECT_EQ(indices.size(), 16); // Number of elements
     std::cout << "Inidices starts : " << indices.size() << "\n";
+    std::cout << "Indices \n" << indices[0]<< "\n"; // inidices
 
     using real_val = SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>>::Real;
     using Dataknots = Data<sofa::type::vector<sofa::type::fixed_array<real_val, 4>>>;
@@ -177,6 +178,85 @@ TEST(CaribouSplineTopology, NS2D_AttachPatch_PlateHole) {
     std::cout << "Positions 2 : " << positions[1] << "\n";
     std::cout << "Positions 3 : " << positions[2] << "\n";
     std::cout << "Positions 4 : " << positions[3] << "\n";
+}
+
+TEST(CaribouSplineTopology, NURBSFromIndices) {
+    using namespace caribou;
+    using namespace caribou::topology;
+    using namespace caribou::geometry;
+    using namespace sofa::helper;
+    using namespace sofa::core::objectmodel;
+
+    using PointID  = sofa::core::topology::Topology::PointID;
+
+    std::cout << "\n ------------------------START------------------------- \n";
+    using SplinePatch = io::NURBSReader<_2D, PointID>::PatchType;
+    std::string path = executable_directory_path + "/meshes/splines/plate_hole_geo.txt";
+    auto reader = io::NURBSReader<_2D, PointID>::Read(path);
+
+    const auto * splinepatch = dynamic_cast<const SplinePatch *>(reader.patch_ptr());
+    EXPECT_EQ(splinepatch->number_of_nodes(), 12);
+    EXPECT_EQ(splinepatch->number_of_nodes_per_elements(), 9);
+    EXPECT_EQ(splinepatch->number_of_elements(), 2);
+
+    std::cout << "\n ------------------------PATCH------------------------- \n";
+    MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
+    EXPECT_MSG_NOEMIT(Error);
+
+    setSimulation(new sofa::simulation::graph::DAGSimulation());
+    auto root = getSimulation()->createNewNode("root");
+
+    // Add a mechanical object required for the creation of an internal mesh
+    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
+            createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec2d"}}).get()
+    );
+    std::cout << "\n ------------------------MO------------------------- \n";
+    mo->resize(splinepatch->number_of_nodes());
+    auto positions = mo->writePositions();
+    for (std::size_t i = 0; i < positions.size(); ++i) {
+        const auto p = splinepatch->position(i);
+        positions[i] = {p[0], p[1]};
+    }
+
+    std::cout << "\n ------------------------Positions------------------------- \n";
+    // Add the CaribouSplineTopology component
+
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>> *> (
+            createObject(root, "CaribouSplineTopology", {{"template", "NurbsSurf_2D"}}).get()
+    );
+    EXPECT_NE(topo, nullptr);
+    std::cout << "\n ------------------------indices------------------------- \n";
+    // Set the indices
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>>;
+    auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
+    indices.resize(splinepatch->number_of_elements());
+
+    for (std::size_t element_id = 0; element_id < indices.size(); ++element_id) {
+        auto & element_indices = indices[element_id];
+        for (std::size_t node_id = 0; node_id < 4; ++node_id) {
+            element_indices[node_id] = splinepatch->element_indices(element_id)[node_id];
+        }
+    }
+    std::cout << "\n ------------------------INIT------------------------- \n";
+    getSimulation()->init(root.get());
+
+    std::cout << "\n ------------------------END------------------------- \n";
+
+//    // Make sure the created internal domain correspond to the one in the mesh file
+//    const auto * quad_domain = topo->domain();
+//    ASSERT_NE(quad_domain, nullptr);
+
+//    FLOATING_POINT_TYPE area = 0;
+//    for (UNSIGNED_INTEGER_TYPE quad_id = 0; quad_id < quad_domain->number_of_elements(); ++quad_id) {
+//        auto quad = quad_domain->element(quad_id);
+//        for (const auto & g : quad.gauss_nodes()) {
+//            const auto x = g.position;
+//            const auto w = g.weight;
+//            const auto detJ = quad.jacobian(x).determinant();
+//            area += w*abs(detJ);
+//        }
+//    }
+//    EXPECT_NEAR(area, 100., 1e-3);
 }
 
 

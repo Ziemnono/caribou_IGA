@@ -16,7 +16,7 @@ DISABLE_ALL_WARNINGS_END
 
 #include <SofaCaribou/Forcefield/ElasticSplineForcefield.h>
 #include <SofaCaribou/Forcefield/ElasticSplineForcefield[NurbsSurf].h>
-#include <Caribou/Topology/IO/NURBSReader.cpp>
+//#include <Caribou/Topology/IO/NURBSReader.cpp>
 
 #include "../sofacaribou_test.h"
 
@@ -37,8 +37,8 @@ using namespace sofa::testing;
 TEST(ElasticSplineForcefield, NurbsSurf_from_SOFA) {
 
     std::string path = executable_directory_path + "/meshes/splines/knot_test_geo.txt";
-    auto reader = io::NURBSReader<_2D>::Read(path);
-    auto patch = reader.patch();
+//    auto reader = io::NURBSReader<_2D>::Read(path);
+//    auto patch = reader.patch();
 
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);

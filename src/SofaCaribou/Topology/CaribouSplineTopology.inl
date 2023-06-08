@@ -94,11 +94,39 @@ void CaribouSplineTopology<Element>::attachSplinePatch(const caribou::topology::
     }
 }
 
+template<typename dtype>
+using Vector = Eigen::Matrix<dtype, Eigen::Dynamic, 1>;
+
+template<typename dtype>
+using Matrix = Eigen::Matrix<dtype, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+template<typename Element>
+void CaribouSplineTopology<Element>::intialise_from_scene(void){
+    using namespace sofa::helper;
+
+    // Sanity checks
+    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>>>(d_indices);
+    if (indices.empty()) {
+        msg_warning() << "Initializing the topology from an empty set of indices. Make sure you fill the "
+                      << "'" << d_indices.getName() << "' data attribute with a vector of node indices.";
+        return;
+    }
+
+    auto positions = ReadAccessor<Data<VecCoord>>(d_position);
+    if (positions.empty()) {
+        msg_warning() << "Initializing the topology from a set of indices, but without any node positions "
+                      << "vector. Make sure you fill the " << "'" << d_position.getName() << "' data attribute "
+                      << "with a vector of node positions.";
+        return;
+    }
+}
 
 template<typename Element>
 void CaribouSplineTopology<Element>::init() {
     using namespace sofa::core::objectmodel;
 
+    std::cout << "Hello I am in Caribout Spline Topology\n";
+    intialise_from_scene();
 //    if (d_indices.isSet()) {
 //        if (p_domain != nullptr) {
 //            msg_warning()

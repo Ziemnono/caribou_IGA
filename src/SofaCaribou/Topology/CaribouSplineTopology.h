@@ -23,12 +23,16 @@ template <typename T, std::size_t N> using fixed_array = ::sofa::helper::fixed_a
 }
 #endif
 
+
+
 namespace SofaCaribou::topology {
 //// Traits to get the Sofa vector type from the dimension
 //template <std::size_t Dim> struct SofaVecType {};
 //template <> struct SofaVecType<1> { using Type = sofa::defaulttype::Vec1Types; };
 //template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; };
 //template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
+
+
 
 /**
  * The CaribouSplineTopology is a wrapper object over an instance of caribou::topology::Domain.
@@ -93,6 +97,8 @@ public:
     // Public methods
     CaribouSplineTopology();
     void init() override;
+
+    void intialise_from_scene(void);
 
     [[nodiscard]] auto
     getTemplateName() const -> std::string override {
