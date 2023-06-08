@@ -48,6 +48,9 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
+    # Plane stress material
+    Material/ElasticMaterial.h
+    Material/PlaneStressMaterial.h
     Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
     Ode/NewtonRaphsonSolver.h
@@ -137,6 +140,9 @@ set(SOURCE_FILES
     Mass/CaribouMass[Hexahedron].cpp
     Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
+    # Elastic material
+    Material/ElasticMaterial.cpp
+
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/NewtonRaphsonSolver.cpp

@@ -41,7 +41,7 @@ void ElasticSplineForcefield<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial<DataTypes>>(BaseContext::Local);
+        auto materials = this->getContext()->template getObjects<material::ElasticMaterial<DataTypes>>(BaseContext::Local);
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
