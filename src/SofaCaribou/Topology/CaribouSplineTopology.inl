@@ -94,31 +94,123 @@ void CaribouSplineTopology<Element>::attachSplinePatch(const caribou::topology::
     }
 }
 
-template<typename dtype>
-using Vector = Eigen::Matrix<dtype, Eigen::Dynamic, 1>;
-
-template<typename dtype>
-using Matrix = Eigen::Matrix<dtype, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-
 template<typename Element>
 void CaribouSplineTopology<Element>::intialise_from_scene(void){
     using namespace sofa::helper;
 
     // Sanity checks
     auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>>>(d_indices);
+
     if (indices.empty()) {
-        msg_warning() << "Initializing the topology from an empty set of indices. Make sure you fill the "
-                      << "'" << d_indices.getName() << "' data attribute with a vector of node indices.";
-        return;
+        msg_warning() << "Indices are empty " << d_indices.getName() << "";
+//        return;
     }
 
     auto positions = ReadAccessor<Data<VecCoord>>(d_position);
     if (positions.empty()) {
-        msg_warning() << "Initializing the topology from a set of indices, but without any node positions "
-                      << "vector. Make sure you fill the " << "'" << d_position.getName() << "' data attribute "
-                      << "with a vector of node positions.";
-        return;
+        msg_warning() << "Positions are not assigned - "<< d_position.getName() << " ";
+//        return;
     }
+
+    auto weights = ReadAccessor<Data<sofa::type::vector<Real>>>(d_weights);
+    auto knot_spans = ReadAccessor<Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>>>(d_knot_spans);
+    auto knot_1 = ReadAccessor<Data<sofa::type::vector<Real>>>(d_knot_1);
+    auto knot_2 = ReadAccessor<Data<sofa::type::vector<Real>>>(d_knot_2);
+
+    if (weights.empty()) {
+        msg_warning() << "Weights are not assigned";
+    }
+    if (knot_spans.empty()) {
+        msg_warning() << "Knot span is not assigned";
+    }
+    if (knot_1.empty()) {
+        msg_warning() << "Knot 1 is not assigned";
+    }
+    if (knot_2.empty()) {
+        msg_warning() << "Knot 2 is not assigned";
+    }
+
+    if (positions.empty() or indices.empty() or weights.empty() or
+        knot_spans.empty() or knot_1.empty() or knot_2.empty()) {
+        msg_warning() << "In big if condition";
+
+    }
+    else{
+        msg_warning() << "In big Else";
+        const auto number_of_nodes = positions.size();
+        const auto number_of_weights = weights.size();
+
+        const auto number_of_elements = indices.size();
+
+        const auto knot_1_size = knot_1.size();
+        const auto knot_2_size = knot_2.size();
+
+
+        if (number_of_nodes != number_of_weights){
+            msg_warning() << "Nodes and weights are not matching";
+        }
+
+        msg_warning() << "Positions size  " << positions.size() << " ";
+        msg_warning() << "Indices size    " << indices.size() << " ";
+        msg_warning() << "Weights size    " << weights.size() << " ";
+        msg_warning() << "Knot spans size " << knot_spans.size() << " ";
+        msg_warning() << "Knot 1 size     " << knot_1.size() << " ";
+        msg_warning() << "Knot 2 size     " << knot_2.size() << " ";
+
+        Double_Matrix s_initial_positions(positions.size(), Dimension);
+        Double_Vector s_weights(weights.size());
+        USInt_Matrix s_indices(indices.size(),NumberOfNodes);
+        Double_Matrix s_knot_ranges(knot_spans.size(),KnotDimension);
+        Double_Vector s_knot1(knot_1_size);
+        Double_Vector s_knot2(knot_2_size);
+
+        // Position and Weights
+        for (std::size_t i = 0; i < number_of_nodes; ++i) {
+            const auto & n = positions[i];
+            // 2 dimensional
+            s_initial_positions(i, 0) = n[0];
+            s_initial_positions(i, 1) = n[1];
+            s_weights(i) = weights[i];
+        }
+
+        // Indices and knot spans
+        for (std::size_t i = 0; i < number_of_elements; i++){
+            const auto & ind = indices[i];
+            for (int j = 0; j < NumberOfNodes; ++j) {
+                s_indices(i, j) = ind[j];
+            }
+            const auto & k_span = knot_spans[i];
+            for (int j = 0; j < KnotDimension; ++j) {
+                s_knot_ranges(i, j) = k_span[j];
+            }
+        }
+
+        // Knot 1
+        for (std::size_t i = 0; i < knot_1_size; i++){
+            s_knot1(i) = knot_1[i];
+        }
+
+        // knot 2
+        for (std::size_t i = 0; i < knot_2_size; i++){
+            s_knot2(i) = knot_2[i];
+        }
+
+        std::cout << "Position \n" << s_initial_positions << "\n";
+        std::cout << "indices \n" << s_indices << "\n";
+        std::cout << "weights \n" << s_weights << "\n";
+        std::cout << "spans \n" << s_knot_ranges << "\n";
+        std::cout << "knot 1 \n" << s_knot1 << "\n";
+        std::cout << "knot 2 \n" << s_knot2 << "\n";
+        this->p_patch_n = SplinePatch(s_initial_positions, s_weights, s_indices, s_knot1, s_knot2, s_knot_ranges);
+        this->p_patch = new SplinePatch(s_initial_positions, s_weights, s_indices, s_knot1, s_knot2, s_knot_ranges);
+        p_patch->print_spline_patch();
+        return;
+
+    }
+
+
+
+
 }
 
 template<typename Element>
@@ -126,26 +218,26 @@ void CaribouSplineTopology<Element>::init() {
     using namespace sofa::core::objectmodel;
 
     std::cout << "Hello I am in Caribout Spline Topology\n";
-    intialise_from_scene();
-//    if (d_indices.isSet()) {
-//        if (p_domain != nullptr) {
-//            msg_warning()
-//                    << "Initializing the topology from a set of indices, while a domain has already been attached. The "
-//                       "latter will be overridden.";
-//        }
+    if (d_indices.isSet()) {
+        msg_warning()<< "In indicies if";
+        if (p_patch != nullptr) {
+            msg_warning()
+                    << "Initializing the topology from a set of indices, while a domain has already been attached. The "
+                       "latter will be overridden.";
+        }
 
-//        // If some indices are set, but no mechanical state is linked, let's try to find one in the current context node
-//        if (not d_indices.getValue().empty() and not d_position.isSet()) {
-//            auto * context = this->getContext();
-//            auto state = context->template get<sofa::core::State<DataTypes>>(BaseContext::Local);
-//            if (state and state->findData("rest_position")) {
-//                d_position.setParent(state->findData("rest_position"));
-//                msg_info() << "Automatically found the nodes positions from'" << state->findData("rest_position")->getLinkPath() << "'.";
-//            }
-//        }
+        // If some indices are set, but no mechanical state is linked, let's try to find one in the current context node
+        if (not d_indices.getValue().empty() and not d_position.isSet()) {
+            auto * context = this->getContext();
+            auto state = context->template get<sofa::core::State<DataTypes>>(BaseContext::Local);
+            if (state and state->findData("rest_position")) {
+                d_position.setParent(state->findData("rest_position"));
+                msg_info() << "Automatically found the nodes positions from'" << state->findData("rest_position")->getLinkPath() << "'.";
+            }
+        }
 
-//        this->initializeFromIndices();
-//    }
+        this->intialise_from_scene();
+    }
 
 
 }

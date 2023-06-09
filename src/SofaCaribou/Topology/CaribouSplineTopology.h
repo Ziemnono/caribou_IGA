@@ -32,7 +32,17 @@ namespace SofaCaribou::topology {
 //template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; };
 //template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
 
+template<typename dtype>
+using Vector = Eigen::Matrix<dtype, Eigen::Dynamic, 1>;
 
+template<typename dtype>
+using Matrix = Eigen::Matrix<dtype, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+using Double_Vector = Vector<FLOATING_POINT_TYPE>;
+using Int_Vector = Vector<int>;
+using Double_Matrix = Matrix<FLOATING_POINT_TYPE>;
+using Int_Matrix = Matrix<int>;
+using USInt_Matrix = Matrix<unsigned int>;
 
 /**
  * The CaribouSplineTopology is a wrapper object over an instance of caribou::topology::Domain.
@@ -141,8 +151,8 @@ public:
      * \note The given domain instance must stay valid throughout the lifespan of this
      *       component.
      */
-    void attachSplinePatch(const SplinePatch * p_patch);
-    void attachSplinePatch(const SplinePatch & p_patch);
+    void attachSplinePatch(const SplinePatch * patch);
+    void attachSplinePatch(const SplinePatch & patch);
 
 //    /**
 //     * Create the underlying Domain by coping the indices from the data attribute 'indices'.
@@ -213,7 +223,7 @@ private:
 //    const Domain * p_domain {nullptr};
     // Pointer to spinepatch
     const SplinePatch * p_patch ;
-    const SplinePatch p_patch_n ;
+    SplinePatch p_patch_n ;
 //    std::unique_ptr< caribou::topology::SplinePatch<Dimension, PointID> > p_patch;
 };
 
