@@ -351,34 +351,43 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
 template <typename Element>
 void ElasticSplineForcefield<Element>::initialize_elements()
 {
+    std::cout << "\n ------------------------- Initialize_elements -------------------------";
     using namespace sofa::core::objectmodel;
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::initialize_elements");
 
+    std::cout << "\n ------------------------- Initialize_elements Begin -------------------------";
     if (!this->mstate)
         return;
-
+    std::cout << "\n ------------------------- Initialize_elements Quad begin-------------------------";
     // Resize the container of elements'quadrature nodes
     const auto nb_elements = this->number_of_elements();
     if (p_elements_quadrature_nodes.size() != nb_elements) {
         p_elements_quadrature_nodes.resize(nb_elements);
+        p_jacobian_pp.resize(nb_elements);
     }
+
+    std::cout << "\n ------------------------- Initialize_elements Quad End-------------------------";
 
     // Translate the Sofa's mechanical state vector to Eigen vector type
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
 
+    std::cout << "\n No of elements " << nb_elements << "\n";
+
     // Loop on each element and compute the shape functions and their derivatives for every of their integration points
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-
+        std::cout << "\n Elements : " << element_id << "\n";
         // Get an Element instance from the Domain
         const auto initial_element = this->topology()->element(element_id);
+        std::cout << "\n Element 1 ia accessed \n";
 
         // Fill in the Gauss integration nodes for this element
         p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
         p_jacobian_pp[element_id] = initial_element.jacobian_papa();
     }
 
+    std::cout << "\n ------------- Elements initialised \n";
     // Compute the volume
     Real v = 0.;
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -512,30 +521,35 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 
 template <typename Element>
 auto ElasticSplineForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
+    std::cout << "\n In get gauss nodes \n";
     GaussContainer gauss_nodes {};
     if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
     }
-
+    std::cout << "\n Gauss nodes is resized to " << element.number_of_gauss_nodes() << " \n";
     const auto nb_of_gauss_nodes = gauss_nodes.size();
+    std::cout << "\n No Gauss nodes is         " << nb_of_gauss_nodes << " \n";
     for (std::size_t gauss_node_id = 0; gauss_node_id < nb_of_gauss_nodes; ++gauss_node_id) {
+        std::cout << "\n----------- " << gauss_node_id << " -------------\n";
+//        std::cout << "\n Gauss nodes Loop \n";
         const auto & g = element.gauss_node(gauss_node_id);
 
         const auto J = element.jacobian(g.position);
         const Mat22 Jinv = J.inverse();
         const auto detJ = std::abs(J.determinant());
 
+//        std::cout << "\n Gauss nodes Jacobian \n";
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
         const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
             (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
-
+//        std::cout << "\n Gauss nodes Derivative \n";
         GaussNode & gauss_node = gauss_nodes[gauss_node_id];
         gauss_node.weight               = g.weight;
         gauss_node.jacobian_determinant = detJ;
         gauss_node.dN_dx                = dN_dx;
     }
-
+    std::cout << "\n Gauss nodes END \n";
     return gauss_nodes;
 }
 
