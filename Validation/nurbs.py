@@ -56,10 +56,11 @@ element_type = "NurbsSurf_2D"
 
 FORCES = [0, 5, 0]
 
-if MATERIAL_MODEL == "SaintVenantKirchhoff" or MATERIAL_MODEL == "NeoHookean":
-    material = MATERIAL_MODEL
-else:
-    raise ValueError('The material model is not implemented yet.')
+material = "PlaneStress"
+#if MATERIAL_MODEL == "SaintVenantKirchhoff" or MATERIAL_MODEL == "NeoHookean":
+#    material = MATERIAL_MODEL
+#else:
+#    raise ValueError('The material model is not implemented yet.')
 
 
 class ControlFrame(Sofa.Core.Controller):
@@ -80,17 +81,18 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
                             relative_residual_tolerance_threshold="1e-10", printLog="1")
         sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-        self.sofa_mo = sofa_node.addObject('MechanicalObject', name="mo", position=patch.all_positions().tolist())
+        self.sofa_mo = sofa_node.addObject('MechanicalObject', name="mo", template = "Vec2d", position=patch.all_positions().tolist())
         sofa_node.addObject('CaribouSplineTopology', name='topo', template = element_type,
                              indices=patch.indices().tolist(), knot_1 = patch.knot_1().tolist(),
                              knot_2 = patch.knot_2().tolist(), weights = patch.all_weights().tolist(), knot_spans = knot_ranges.tolist())
 
-#        sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         sofa_node.addObject('FixedConstraint', indices=[0, 1, 2])
         sofa_node.addObject('ConstantForceField', totalForce=FORCES, indices=[6,7,8])
         sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('ElasticSplineForcefield', template = element_type, printLog=True)
 
+        self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
+        print("Nurbs Initial Positions " sofa_rest_position)
 
 #        fenics_node = root.addChild("fenics_node")
 #        fenics_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
@@ -110,32 +112,31 @@ class ControlFrame(Sofa.Core.Controller):
 
         return root
 
-#    def onSimulationInitDoneEvent(self, event):
-#        self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
+    def onSimulationInitDoneEvent(self, event):
+        self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
 #        self.fenics_rest_position = np.array(self.fenics_mo.position.value.copy().tolist())
 
-#    def onAnimateBeginEvent(self, event):
+    def onAnimateBeginEvent(self, event):
 
-#        pass
+        pass
 
-#    def onAnimateEndEvent(self, event):
-#        sofa_current_positions = np.array(self.sofa_mo.position.value.copy().tolist())
-#        fenics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
+    def onAnimateEndEvent(self, event):
+        sofa_current_positions = np.array(self.sofa_mo.position.value.copy().tolist())
 
 #        errors = []
-#        for sofa_current_point, fenics_current_point, sofa_initial_point in zip(sofa_current_positions,
-#                                                                                fenics_current_positions,
-#                                                                                self.sofa_rest_position):
+#        for sofa_current_point, sofa_initial_point in zip(sofa_current_positions, self.sofa_rest_position):
 #            if np.linalg.norm(sofa_current_point - sofa_initial_point) != 0:
 #                errors.append(np.linalg.norm(sofa_current_point - fenics_current_point) / np.linalg.norm(
 #                    sofa_current_point - sofa_initial_point))
 
-#        mean_error = np.mean(np.array(errors))
+        mean_error = np.mean(np.array(errors))
 
-#        displacement = fenics_current_positions - self.sofa_rest_position
+        displacement = sofa_current_positions - self.sofa_rest_position
 #        print(displacement[:, 1].min())
+        print("Displacement is ")
+        print(displacement)
 
-#        print(f"Relative Mean Error: {100 * mean_error} %")
+        print(f"Relative Mean Error: {100 * mean_error} %")
 
 
 def createScene(node):
