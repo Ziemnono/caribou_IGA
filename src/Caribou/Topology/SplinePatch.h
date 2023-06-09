@@ -270,7 +270,7 @@ public:
         );
     }
 
-    void print_spline_patch(void){
+    void print_spline_patch(void) const {
 //        std::cout << "Control points : \n" << p_nodes  << "\n";
         std::cout << "Weights \n" << p_weights.transpose() << "\n";
         std::cout << "Indices \n" << p_indices << "\n";
