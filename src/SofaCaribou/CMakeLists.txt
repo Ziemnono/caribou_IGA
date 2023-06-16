@@ -45,6 +45,11 @@ set(HEADER_FILES
     Mass/CaribouMass[Tetrahedron10].h
     Mass/CaribouMass[Hexahedron].h
     Mass/CaribouMass[Hexahedron20].h
+
+    # Spline Mass Matrix
+    Mass/CaribouSplineMass.h
+    Mass/CaribouSplineMass[NurbsSurf].h
+
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -95,11 +100,17 @@ set(TEMPLATE_FILES
 
     Mapping/CaribouBarycentricMapping.inl
     Mass/CaribouMass.inl
+
+    # Spline Mass Matrix
+    Mass/CaribouSplineMass.h
+
     Solver/ConjugateGradientSolver.inl
     Solver/EigenSolver.inl
     Topology/CaribouTopology.inl
+
     # CaribouSplineTopology
     Topology/CaribouSplineTopology.inl
+
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl
@@ -139,6 +150,9 @@ set(SOURCE_FILES
     Mass/CaribouMass[Tetrahedron10].cpp
     Mass/CaribouMass[Hexahedron].cpp
     Mass/CaribouMass[Hexahedron20].cpp
+
+    # Spline mass specialisation
+    Mass/CaribouSplineMass[NurbsSurf].cpp
     Material/HyperelasticMaterial.cpp
     # Elastic material
     Material/ElasticMaterial.cpp
