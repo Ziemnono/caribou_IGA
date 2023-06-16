@@ -54,7 +54,7 @@ void ElasticSplineForcefield<Element>::init()
         }
     }
 
-    Real E0  = 100000;
+    Real E0  = 10000;
     Real nu0 = 0.3;
     p_C <<  1,    nu0,    0,
           nu0,      1,    0,
@@ -74,8 +74,11 @@ void ElasticSplineForcefield<Element>::addForce(const sofa::core::MechanicalPara
     if (mparams) {
         // Stores the identifier of the x position vector for later use in the stiffness matrix assembly.
         p_X_id = mparams->x();
+        std::cout << "p_X_id\n";
+        std::cout << p_X_id << "\n";
     }
-
+    std::cout << "\n1st Force function " << fId << " \n";
+//    std::cout << fId;
     Inherit::addForce(mparams, fId);
 }
 
@@ -88,6 +91,7 @@ void ElasticSplineForcefield<Element>::addForce(
 {
     using namespace sofa::core::objectmodel;
     using namespace sofa::helper;
+    std::cout << "\n2nd Force function\n";
 
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
@@ -120,6 +124,8 @@ void ElasticSplineForcefield<Element>::addForce(
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
+//    std::cout << "X position\n" << X << "\n";
+    std::cout << "Forces\n" << forces << "\n";
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::addForce");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -133,11 +139,11 @@ void ElasticSplineForcefield<Element>::addForce(
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
-
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
-
+        // Jacobian para to parent
+        const auto J2 = p_jacobian_pp[element_id];
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
 
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -152,23 +158,28 @@ void ElasticSplineForcefield<Element>::addForce(
             // Deformation tensor at gauss node
             const Mat22 F = current_nodes_position.transpose()*dN_dx;
             const auto J = F.determinant();
-
             // Right Cauchy-Green strain tensor at gauss node
             const Mat22 C = F.transpose() * F;
 
             // Second Piola-Kirchhoff stress tensor at gauss node
             const Mat22 S = material->PK2_stress(J, C);
-
+//            std::cout << "\n-----------------START-------------------\n";
+//            std::cout << "dN_dx \n" << dN_dx << "\n";
+//            std::cout << "Deformation tensor F \n" << F << "\n";
+//            std::cout << "Deformation jacobian J \n" << J << "\n";
+//            std::cout << "C-G strain tensor \n" << C << "\n";
+//            std::cout << "PK2 stress tensor  \n" << S << "\n";
+//            std::cout << "\n------------------END-------------------\n";
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 const auto dx = dN_dx.row(i).transpose();
-                const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
+                const Vector<Dimension> f_ = (detJ * w * J2) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
                     nodal_forces(i, j) += f_[j];
                 }
             }
         }
-
+        std::cout << "\nNodal Force \n" << nodal_forces << "\n";
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
@@ -190,6 +201,7 @@ void ElasticSplineForcefield<Element>::addDForce(
     const sofa::core::objectmodel::Data<VecDeriv>& d_dx)
 {
     using namespace sofa::core::objectmodel;
+    std::cout << "\n3rd Force function\n";
 
     if (not K_is_up_to_date) {
         assemble_stiffness();
@@ -229,6 +241,7 @@ void ElasticSplineForcefield<Element>::addKToMatrix(
     if (not K_is_up_to_date) {
         assemble_stiffness();
     }
+    std::cout << "\n4th Force function\n";
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::addKToMatrix");
 
@@ -265,6 +278,7 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
     using namespace sofa::core::objectmodel;
 
     SOFA_UNUSED(mparams);
+    std::cout << "\n Potential energy\n";
 
     if (!this->mstate)
         return 0.;
@@ -351,43 +365,30 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
 template <typename Element>
 void ElasticSplineForcefield<Element>::initialize_elements()
 {
-    std::cout << "\n ------------------------- Initialize_elements -------------------------";
     using namespace sofa::core::objectmodel;
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::initialize_elements");
 
-    std::cout << "\n ------------------------- Initialize_elements Begin -------------------------";
     if (!this->mstate)
         return;
-    std::cout << "\n ------------------------- Initialize_elements Quad begin-------------------------";
     // Resize the container of elements'quadrature nodes
     const auto nb_elements = this->number_of_elements();
     if (p_elements_quadrature_nodes.size() != nb_elements) {
         p_elements_quadrature_nodes.resize(nb_elements);
         p_jacobian_pp.resize(nb_elements);
     }
-
-    std::cout << "\n ------------------------- Initialize_elements Quad End-------------------------";
-
     // Translate the Sofa's mechanical state vector to Eigen vector type
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
 
-    std::cout << "\n No of elements " << nb_elements << "\n";
-
     // Loop on each element and compute the shape functions and their derivatives for every of their integration points
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        std::cout << "\n Elements : " << element_id << "\n";
         // Get an Element instance from the Domain
         const auto initial_element = this->topology()->element(element_id);
-        std::cout << "\n Element 1 ia accessed \n";
-
         // Fill in the Gauss integration nodes for this element
         p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
         p_jacobian_pp[element_id] = initial_element.jacobian_papa();
     }
-
-    std::cout << "\n ------------- Elements initialised \n";
     // Compute the volume
     Real v = 0.;
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -401,8 +402,6 @@ void ElasticSplineForcefield<Element>::initialize_elements()
             v += detJ*w;
         }
     }
-    msg_info() << "Total volume of the geometry is " << v;
-
     sofa::helper::AdvancedTimer::stepEnd("ElasticSplineForcefield::initialize_elements");
 }
 
@@ -466,7 +465,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 
         // Jacobian para to parent
         const auto J2 = p_jacobian_pp[element_id];
-
+        int count = 1;
         for (const auto & gauss_node : gauss_nodes_of(element_id)) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
@@ -478,18 +477,27 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
             const auto w = gauss_node.weight;
 
             Matrix<3, NumberOfNodesPerElement*Dimension> B;
-
+            B.setZero();
             for (int i = 0; i<NumberOfNodesPerElement; i++){
-                B(0, i) = dN_dx(i, 0);
-                B(1, NumberOfNodesPerElement + i) = dN_dx(i, 1);
-                B(2, i) = dN_dx(i, 1);
-                B(2, NumberOfNodesPerElement + i) = dN_dx(i, 0);
+                B(0, i*Dimension) = dN_dx(i, 0);
+                B(1, i*Dimension + 1) = dN_dx(i, 1);
+                B(2, i*Dimension) = dN_dx(i, 1);
+                B(2, i*Dimension + 1) = dN_dx(i, 0);
             }
 
+//            std::cout << "\n --------------------Start-------------------------------\n";
+//            std::cout << "Gauss point : " << count << "\n";
+//            std::cout << "B Matrix \n" << B << "\n";
+//            std::cout << "B Matrix size\n" << dN_dx << "\n";
+//            std::cout << "Elasticity Matrix  : \n" << p_C << "\n";
+//            std::cout << "Normal jacob : " << detJ << "\n";
+//            std::cout << "IGA jacob : " << J2 << "\n";
+//            std::cout << "Weight : " << w << "\n";
             Ke = Ke + B.transpose() * p_C * B * detJ * J2 * w;
-
-
+            count = count + 1;
         }
+//        std::cout << "\n Element stiffness \n" << Ke << "\n";
+
 
 #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
@@ -521,35 +529,27 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 
 template <typename Element>
 auto ElasticSplineForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
-    std::cout << "\n In get gauss nodes \n";
     GaussContainer gauss_nodes {};
     if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
     }
-    std::cout << "\n Gauss nodes is resized to " << element.number_of_gauss_nodes() << " \n";
     const auto nb_of_gauss_nodes = gauss_nodes.size();
-    std::cout << "\n No Gauss nodes is         " << nb_of_gauss_nodes << " \n";
     for (std::size_t gauss_node_id = 0; gauss_node_id < nb_of_gauss_nodes; ++gauss_node_id) {
-        std::cout << "\n----------- " << gauss_node_id << " -------------\n";
-//        std::cout << "\n Gauss nodes Loop \n";
         const auto & g = element.gauss_node(gauss_node_id);
 
         const auto J = element.jacobian(g.position);
         const Mat22 Jinv = J.inverse();
         const auto detJ = std::abs(J.determinant());
 
-//        std::cout << "\n Gauss nodes Jacobian \n";
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
         const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
             (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
-//        std::cout << "\n Gauss nodes Derivative \n";
         GaussNode & gauss_node = gauss_nodes[gauss_node_id];
         gauss_node.weight               = g.weight;
         gauss_node.jacobian_determinant = detJ;
         gauss_node.dN_dx                = dN_dx;
     }
-    std::cout << "\n Gauss nodes END \n";
     return gauss_nodes;
 }
 
