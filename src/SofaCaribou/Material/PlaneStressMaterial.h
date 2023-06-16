@@ -45,7 +45,7 @@ public:
                 poisson_ratio,        1,                0,
                 0,                    0,        (1 - poisson_ratio)/2;
 
-        C = D;
+        C = young_modulus/(1 - poisson_ratio*poisson_ratio)*D;
     }
 
     /**
