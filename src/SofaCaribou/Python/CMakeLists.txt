@@ -17,6 +17,7 @@ set(HEADER_FILES
 
     Topology/CaribouSplineTopology.h
     Forcefield/ElasticSplineForcefield.h
+    Forcefield/HyperelasticSplineForcefield.h
 )
 
 set(SOURCE_FILES
@@ -35,6 +36,7 @@ set(SOURCE_FILES
 
     Topology/CaribouSplineTopology.cpp
     Forcefield/ElasticSplineForcefield.cpp
+    Forcefield/HyperelasticSplineForcefield.cpp
 )
 
 set(PYTHON_FILES
