@@ -41,7 +41,7 @@ void HyperelasticSplineForcefield<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial<DataTypes>>(BaseContext::Local);
+        auto materials = this->getContext()->template getObjects<material::Hyperelastic2DMaterial<DataTypes>>(BaseContext::Local);
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
@@ -117,7 +117,7 @@ void HyperelasticSplineForcefield<Element>::addForce(
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
-        auto node_indices = this->topology()->domain()->element_indices(element_id);
+        auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
@@ -142,14 +142,14 @@ void HyperelasticSplineForcefield<Element>::addForce(
             const auto & w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            const Mat33 F = current_nodes_position.transpose()*dN_dx;
+            const Mat22 F = current_nodes_position.transpose()*dN_dx;
             const auto J = F.determinant();
 
             // Right Cauchy-Green strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
+            const Mat22 C = F.transpose() * F;
 
             // Second Piola-Kirchhoff stress tensor at gauss node
-            const Mat33 S = material->PK2_stress(J, C);
+            const Mat22 S = material->PK2_stress(J, C);
 
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
@@ -213,6 +213,7 @@ void HyperelasticSplineForcefield<Element>::addDForce(
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticSplineForcefield::addDForce");
 }
 
+
 template <typename Element>
 void HyperelasticSplineForcefield<Element>::addKToMatrix(
     sofa::defaulttype::BaseMatrix * matrix,
@@ -257,6 +258,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
     using namespace sofa::core::objectmodel;
 
     SOFA_UNUSED(mparams);
+    std::cout << "\n Potential energy\n";
 
     if (!this->mstate)
         return 0.;
@@ -290,7 +292,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
-        auto node_indices = this->topology()->domain()->element_indices(element_id);
+        auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> initial_nodes_position;
@@ -328,7 +330,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
             const auto J = F.determinant();
 
             // Strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
+            const Mat22 C = F.transpose() * F;
 
             // Add the potential energy at gauss node
             Psi += (detJ * w) *  material->strain_energy_density(J, C);
@@ -339,6 +341,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
 
     return Psi;
 }
+
 
 template <typename Element>
 void HyperelasticSplineForcefield<Element>::initialize_elements()
@@ -354,10 +357,7 @@ void HyperelasticSplineForcefield<Element>::initialize_elements()
     const auto nb_elements = this->number_of_elements();
     if (p_elements_quadrature_nodes.size() != nb_elements) {
         p_elements_quadrature_nodes.resize(nb_elements);
-    }
-
-    if (jacobian_pp.size() != nb_elements) {
-        jacobian_pp.resize(nb_elements);
+        p_jacobian_pp.resize(nb_elements);
     }
 
     // Translate the Sofa's mechanical state vector to Eigen vector type
@@ -372,7 +372,7 @@ void HyperelasticSplineForcefield<Element>::initialize_elements()
 
         // Fill in the Gauss integration nodes for this element
         p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
-        jacobian_pp[element_id] = initial_element.jacobian_p2p();
+        p_jacobian_pp[element_id] = initial_element.jacobian_papa();
     }
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticSplineForcefield::initialize_elements");
@@ -398,6 +398,7 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const sofa::core:
 template<typename Element>
 template<typename Derived>
 void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase<Derived> & x) {
+
     const auto material = d_material.get();
 
     [[maybe_unused]]
@@ -409,21 +410,11 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::Matr
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto Id = Mat33::Identity();
+    static const auto Id = Mat22::Identity();
     const auto nb_elements = this->number_of_elements();
     const auto nb_nodes = x.rows();
     const auto nDofs = nb_nodes*Dimension;
     p_K.resize(nDofs, nDofs);
-
-    Real E0  = 100000;
-    Real nu0 = 0.3;
-
-    Mat33 C;
-    C <<  1,    nu0,    0,
-        nu0,      1,    0,
-          0,      0, (1-nu0)/2;
-
-    C = (E0/(1-nu0^2)) * C;
 
     ///< Triplets are used to store matrix entries before the call to 'compress'.
     /// Duplicates entries are summed up.
@@ -434,7 +425,7 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::Matr
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
-        auto node_indices = this->topology()->domain()->element_indices(element_id);
+        auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
 
         // Fetch the current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
@@ -446,7 +437,7 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::Matr
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
 
-        const auto J2 = jacobian_pp[element_id];
+        const auto J2 = p_jacobian_pp[element_id];
         for (const auto & gauss_node : gauss_nodes_of(element_id)) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
@@ -457,35 +448,53 @@ void HyperelasticSplineForcefield<Element>::assemble_stiffness(const Eigen::Matr
             // Gauss quadrature node weight
             const auto w = gauss_node.weight;
 
-            Matrix<3, NumberOfNodesPerElement*2> B;
+            // Deformation tensor at gauss node
+            const Mat22 F = current_nodes_position.transpose()*dN_dx;
+            const auto J = F.determinant();
 
-            // B matrix
-            //        _                                      _
-            //        |  N_1,x  N_2,x  ...      0     0  ... |
-            //  B  =  |      0      0  ... N_1,y  N_2,y  ... |
-            //        |  N_1,y  N_2,y  ... N_1,x  N_2,x  ... |
-            //        -                                      -
-            B(0, Eigen::seq(0,NumberOfNodesPerElement-1)) = dN_dx.col(0);
-            B(1, Eigen::seq(NumberOfNodesPerElement, 2*NumberOfNodesPerElement-1)) = dN_dx.col(1);
-            B(2, Eigen::seq(0,NumberOfNodesPerElement-1)) = dN_dx.col(1);
-            B(2, Eigen::seq(NumberOfNodesPerElement, 2*NumberOfNodesPerElement-1)) = dN_dx.col(0);
+            // Right Cauchy-Green strain tensor at gauss node
+            const Mat22 C = F.transpose() * F;
 
-            Ke = Ke + B.transpose() * C * B * detJ * J2 * w;
+            // Second Piola-Kirchhoff stress tensor at gauss node
+            const auto S = material->PK2_stress(J, C);
 
-//            // Deformation tensor at gauss node
-//            const Mat33 F = current_nodes_position.transpose()*dN_dx;
-//            const auto J = F.determinant();
-
-//            // Right Cauchy-Green strain tensor at gauss node
-//            const Mat33 C = F.transpose() * F;
-
-//            // Second Piola-Kirchhoff stress tensor at gauss node
-//            const auto S = material->PK2_stress(J, C);
-
-//            // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
-//            const auto D = material->PK2_stress_jacobian(J, C);
+            // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
+            const auto D = material->PK2_stress_jacobian(J, C);
 
             // Computation of the tangent-stiffness matrix
+            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
+                const Vec2 dxi = dN_dx.row(i).transpose();
+
+                Matrix<3,2> Bi;
+                Bi <<
+                   F(0,0)*dxi[0],                 F(1,0)*dxi[0],
+                   F(0,1)*dxi[1],                 F(1,1)*dxi[1],
+                   F(0,0)*dxi[1] + F(0,1)*dxi[0], F(1,0)*dxi[1] + F(1,1)*dxi[0];
+                // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
+                Mat22 Kii = (dxi.dot(S*dxi)*Id + Bi.transpose()*D*Bi) * detJ * J2 * w;
+                Ke.template block<Dimension, Dimension>(i*Dimension, i*Dimension)
+                        .template triangularView<Eigen::Upper>()
+                        += Kii;
+
+                // We now loop only on the upper triangular part of the
+                // element stiffness matrix Ke since it is symmetric
+                for (std::size_t j = i+1; j < NumberOfNodesPerElement; ++j) {
+                    // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
+                    const Vec2 dxj = dN_dx.row(j).transpose();
+
+                    Matrix<3,2> Bj;
+                    Bj <<
+                       F(0,0)*dxj[0],                 F(1,0)*dxj[0],
+                       F(0,1)*dxj[1],                 F(1,1)*dxj[1],
+                       F(0,0)*dxj[1] + F(0,1)*dxj[0], F(1,0)*dxj[1] + F(1,1)*dxj[0];
+
+                    // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
+                    Mat22 Kij = (dxi.dot(S*dxj)*Id + Bi.transpose()*D*Bj) * detJ * J2 * w;
+                    Ke.template block<Dimension, Dimension>(i*Dimension, j*Dimension)
+                            .noalias() += Kij;
+                }
+            }
         }
 
 #pragma omp critical
@@ -522,12 +531,13 @@ auto HyperelasticSplineForcefield<Element>::get_gauss_nodes(const std::size_t & 
     if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
     }
+
     const auto nb_of_gauss_nodes = gauss_nodes.size();
     for (std::size_t gauss_node_id = 0; gauss_node_id < nb_of_gauss_nodes; ++gauss_node_id) {
         const auto & g = element.gauss_node(gauss_node_id);
 
         const auto J = element.jacobian(g.position);
-        const Mat33 Jinv = J.inverse();
+        const Mat22 Jinv = J.inverse();
         const auto detJ = std::abs(J.determinant());
 
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z

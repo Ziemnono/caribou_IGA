@@ -25,7 +25,11 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron].h
     Forcefield/HyperelasticForcefield[Tetrahedron10].h
 
-    # Hyper elastic spline forcefield
+    # Hyper Elastic spline force field
+    Forcefield/HyperelasticSplineForcefield.h
+    Forcefield/HyperelasticSplineForcefield[NurbsSurf].h
+
+    # Elastic spline forcefield
     Forcefield/ElasticSplineForcefield.h
     Forcefield/ElasticSplineForcefield[NurbsSurf].h
 
@@ -53,9 +57,14 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
+
     # Plane stress material
     Material/ElasticMaterial.h
     Material/PlaneStressMaterial.h
+
+    Material/Hyperelastic2DMaterial.h
+    Material/SaintVenantKirchhoff2DMaterial.h
+
     Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
     Ode/NewtonRaphsonSolver.h
@@ -94,6 +103,9 @@ set(TEMPLATE_FILES
     Forcefield/CaribouSplineForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
+
+    # Hyper Elastic spline force field
+    Forcefield/HyperelasticSplineForcefield.inl
 
     # Hyper elastic spline forcefield
     Forcefield/ElasticSplineForcefield.inl
@@ -134,8 +146,10 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
 
-    # Hyper elastic spline forcefield
+    # Elastic spline forcefield
     Forcefield/ElasticSplineForcefield[NurbsSurf].cpp
+    # Hyper elastic spline forcefield
+    Forcefield/HyperelasticSplineForcefield[NurbsSurf].cpp
 
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
@@ -156,6 +170,8 @@ set(SOURCE_FILES
     Material/HyperelasticMaterial.cpp
     # Elastic material
     Material/ElasticMaterial.cpp
+
+    Material/Hyperelastic2DMaterial.cpp
 
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp

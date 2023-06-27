@@ -4,7 +4,7 @@
 #include <array>
 
 #include <SofaCaribou/config.h>
-#include <SofaCaribou/Material/HyperelasticMaterial.h>
+#include <SofaCaribou/Material/Hyperelastic2DMaterial.h>
 #include <SofaCaribou/Forcefield/CaribouSplineForcefield.h>
 
 #include <Caribou/config.h>
@@ -14,7 +14,7 @@
 
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
-#include <SofaCaribou/Topology/CaribouTopology.h>
+#include <SofaCaribou/Topology/CaribouSplineTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/defaulttype/BaseMatrix.h>
@@ -53,6 +53,9 @@ public:
     using Mat33   = Matrix<3, 3>;
     using Vec3   = Vector<3>;
 
+    using Mat22   = Matrix<2, 2>;
+    using Vec2   = Vector<2>;
+
     template <typename ObjectType>
     using Link = sofa::core::objectmodel::SingleLink<HyperelasticSplineForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
@@ -60,7 +63,6 @@ public:
     struct GaussNode {
         Real weight;
         Real jacobian_determinant;
-        Real Jacobian_parent2para;
         Matrix<NumberOfNodesPerElement, Dimension> dN_dx;
     };
 
@@ -209,12 +211,15 @@ private:
     virtual auto get_gauss_nodes(const std::size_t & element_id, const Element & element) const -> GaussContainer;
 
     // Data members
-    Link<material::HyperelasticMaterial<DataTypes>> d_material;
+    Link<material::Hyperelastic2DMaterial<DataTypes>> d_material;
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables
     std::vector<GaussContainer> p_elements_quadrature_nodes;
-    std::vector<Real> jacobian_pp;
+
+    std::vector<Real> p_jacobian_pp; // Parametric to parent jacobian.
+    Mat33 p_C;
+
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
 
