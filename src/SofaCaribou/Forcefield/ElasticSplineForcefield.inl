@@ -54,14 +54,6 @@ void ElasticSplineForcefield<Element>::init()
         }
     }
 
-    Real E0  = 10000;
-    Real nu0 = 0.3;
-    p_C <<  1,    nu0,    0,
-          nu0,      1,    0,
-            0,      0, (1-nu0)/2;
-
-    p_C = (E0/(1-nu0*nu0)) * p_C;
-
     // Compute and store the shape functions and their derivatives for every integration points
     initialize_elements();
 
@@ -125,7 +117,7 @@ void ElasticSplineForcefield<Element>::addForce(
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
 //    std::cout << "X position\n" << X << "\n";
-    std::cout << "Forces\n" << forces << "\n";
+//    std::cout << "Forces\n" << forces << "\n";
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::addForce");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -179,7 +171,7 @@ void ElasticSplineForcefield<Element>::addForce(
                 }
             }
         }
-        std::cout << "\nNodal Force \n" << nodal_forces << "\n";
+//        std::cout << "\nNodal Force \n" << nodal_forces << "\n";
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
@@ -476,6 +468,9 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
             // Gauss quadrature node weight
             const auto w = gauss_node.weight;
 
+            // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
+            const auto D = material->elasticity_matrix();
+
             Matrix<3, NumberOfNodesPerElement*Dimension> B;
             B.setZero();
             for (int i = 0; i<NumberOfNodesPerElement; i++){
@@ -493,7 +488,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 //            std::cout << "Normal jacob : " << detJ << "\n";
 //            std::cout << "IGA jacob : " << J2 << "\n";
 //            std::cout << "Weight : " << w << "\n";
-            Ke = Ke + B.transpose() * p_C * B * detJ * J2 * w;
+            Ke = Ke + B.transpose() * D * B * detJ * J2 * w;
             count = count + 1;
         }
 //        std::cout << "\n Element stiffness \n" << Ke << "\n";

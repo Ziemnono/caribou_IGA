@@ -217,7 +217,6 @@ private:
     std::vector<GaussContainer> p_elements_quadrature_nodes;
 
     std::vector<Real> p_jacobian_pp; // Parametric to parent jacobian.
-    Mat33 p_C;
 
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
