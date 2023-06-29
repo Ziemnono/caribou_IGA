@@ -2,7 +2,6 @@
 #include <pybind11/pybind11.h>
 
 #include <Caribou/Topology/config.h>
-#include <Caribou/Topology/IO/NURBSReader.h>
 
 #ifdef CARIBOU_WITH_VTK
 #include <Caribou/Topology/IO/VTKReader.h>
@@ -24,19 +23,6 @@ void add_reader(pybind11::module & m) {
 }
 #endif
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
-void add_spline_reader(pybind11::module & m) {
-    std::string name = "NURBSReader" + std::to_string(Dimension) + "D";
-    pybind11::class_<NURBSReader<Dimension>> c(m, name.c_str());
-
-    c.def_static("Read", &NURBSReader<Dimension>::Read);
-    c.def("__str__", [](const NURBSReader<Dimension> & self) {
-        std::stringstream ss;
-        ss << self;
-        return ss.str();
-    });
-}
-
 void create_IO(pybind11::module & m) {
     pybind11::module io = m.def_submodule("IO");
 
@@ -57,19 +43,6 @@ void create_IO(pybind11::module & m) {
         }
     }, pybind11::arg("filepath"), pybind11::arg("dimension") = 3);
 #endif
-
-    add_spline_reader<2>(m);
-    add_spline_reader<3>(m);
-
-    io.def("NURBSReader", [](const std::string & filepath, unsigned int dimension) {
-        if (dimension == 2) {
-            return pybind11::cast(NURBSReader<2>::Read(filepath));
-        } else if (dimension == 3) {
-            return pybind11::cast(NURBSReader<3>::Read(filepath));
-        } else {
-            throw std::runtime_error("Trying to create a VTKReader with a dimension that is not 1, 2 or 3.");
-        }
-    }, pybind11::arg("filepath"), pybind11::arg("dimension") = 3);
 
 }
 
