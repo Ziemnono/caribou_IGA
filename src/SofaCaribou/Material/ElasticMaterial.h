@@ -56,6 +56,8 @@ public:
     virtual Eigen::Matrix<Real, 3, 3>
     PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
+    virtual Eigen::Matrix<Real, 3, 3>
+    elasticity_matrix(void) const  = 0;
 
     // Sofa's scene methods
 

@@ -79,6 +79,11 @@ public:
         return C;
     }
 
+    Eigen::Matrix<Real, 3, 3>
+    elasticity_matrix(void) const override {
+        return C;
+    }
+
 private:
     // Private members
     Real mu; // Lame's mu parameter
