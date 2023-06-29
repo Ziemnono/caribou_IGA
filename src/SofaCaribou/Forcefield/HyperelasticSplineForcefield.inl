@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Forcefield/HyperelasticSplineForcefield.h>
@@ -129,7 +129,7 @@ void HyperelasticSplineForcefield<Element>::addForce(
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
-
+        const auto J2 = p_jacobian_pp[element_id];
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
 
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -154,7 +154,7 @@ void HyperelasticSplineForcefield<Element>::addForce(
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 const auto dx = dN_dx.row(i).transpose();
-                const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
+                const Vector<Dimension> f_ = (detJ * J2 * w) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
                     nodal_forces(i, j) += f_[j];
                 }
@@ -313,7 +313,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
         }
 
         // Compute the nodal forces
-
+        const auto J2 = p_jacobian_pp[element_id];
         for (const GaussNode & gauss_node : p_elements_quadrature_nodes[element_id]) {
 
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -333,7 +333,7 @@ SReal HyperelasticSplineForcefield<Element>::getPotentialEnergy (
             const Mat22 C = F.transpose() * F;
 
             // Add the potential energy at gauss node
-            Psi += (detJ * w) *  material->strain_energy_density(J, C);
+            Psi += (detJ * J2 * w) *  material->strain_energy_density(J, C);
         }
     }
 
