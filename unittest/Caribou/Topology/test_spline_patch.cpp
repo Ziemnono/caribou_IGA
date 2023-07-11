@@ -31,8 +31,6 @@ TEST (Splinepatch, XY_RECTANGLE) {
             1, 2,
             2, 2;
 
-
-
     Double_Vector weights(9);
     weights << 1,1,1,1,1,1,1,1,1;
 
@@ -46,7 +44,7 @@ TEST (Splinepatch, XY_RECTANGLE) {
     knot1 << 0, 0, 0, 1, 1, 1;
 
     Double_Vector knot2(6);
-    knot1 <<  0, 0, 0, 1, 1, 1;
+    knot2 <<  0, 0, 0, 1, 1, 1;
 
     EXPECT_EQ(2,2);
 
@@ -86,6 +84,94 @@ TEST (Splinepatch, XY_RECTANGLE) {
     std::cout << "all weights " << patch.weights() << "\n";
     std::cout << "all indices " << patch.indices() << "\n";
     std::cout << "all positions " << patch.positions().node(0) << "\n";
+    std::cout << "Boundary 1 \n" << patch.boundary_elems_nodes(1) << "\n";
+    std::cout << "Boundary 2 \n" << patch.boundary_elems_nodes(2) << "\n";
+    std::cout << "Boundary 3 \n" << patch.boundary_elems_nodes(3) << "\n";
+    std::cout << "Boundary 4 \n" << patch.boundary_elems_nodes(4) << "\n";
 
 }
 
+TEST (Splinepatch, bounday_indices) {
+    Double_Matrix initial_positions(20,2);
+    initial_positions <<
+            0, 0,
+            1, 0,
+            2, 0,
+            3, 0,
+            4, 0,
+            0, 1,
+            1, 1,
+            2, 1,
+            3, 1,
+            4, 1,
+            0, 2,
+            1, 2,
+            2, 2,
+            3, 2,
+            4, 2,
+            0, 3,
+            1, 3,
+            2, 3,
+            3, 3,
+            4, 3;
+
+    Double_Vector weights(20);
+    weights << 1,1,1,1,1,
+               1,1,1,1,1,
+               1,1,1,1,1,
+               1,1,1,1,1;
+
+    USInt_Matrix indices(6,9);
+    indices << 0,1,2,5,6,7,10,11,12,
+               1,2,3,6,7,8,11,12,13,
+               2,3,4,7,8,9,12,13,14,
+               5,6,7,10,11,12,15,16,17,
+               6,7,8,11,12,13,16,17,18,
+               7,8,9,12,13,14,17,18,19;
+
+    Double_Matrix knot_ranges(6,4);
+    knot_ranges << 0,      0, 0.33, 0.5,
+                   0.33,   0, 0.66, 0.5,
+                   0.66,   0,    1, 0.5,
+                      0, 0.5, 0.33, 1,
+                   0.33, 0.5, 0.66, 1,
+                   0.66, 0.5,    1, 1;
+
+    Double_Vector knot1(8);
+    knot1 << 0, 0, 0, 0.33, 0.66, 1, 1, 1;
+
+    Double_Vector knot2(7);
+    knot2 <<  0, 0, 0, 0.5, 1, 1, 1;
+
+    caribou::topology::SplinePatch<_2D> patch(initial_positions, weights, indices, knot1, knot2, knot_ranges);
+
+
+    patch.print_spline_patch();
+
+    EXPECT_EQ(patch.number_of_nodes(), 20);
+    EXPECT_EQ(patch.canonical_dimension(), 2);
+    EXPECT_EQ(patch.number_of_nodes_per_elements(), 9);
+    EXPECT_EQ(patch.number_of_elements(), 6);
+
+
+    std::cout << "all weights " << patch.weights() << "\n";
+    std::cout << "all indices " << patch.indices() << "\n";
+    std::cout << "all positions " << patch.positions().node(0) << "\n";
+    std::cout << "Boundary 1 \n" << patch.boundary_elems_nodes(1) << "\n";
+    std::cout << "Boundary 2 \n" << patch.boundary_elems_nodes(2) << "\n";
+    std::cout << "Boundary 3 \n" << patch.boundary_elems_nodes(3) << "\n";
+    std::cout << "Boundary 4 \n" << patch.boundary_elems_nodes(4) << "\n";
+//    std::cout << "Elements on 1 : " << patch.number_of_elems_on_boundary(1) << "\n";
+//    std::cout << "Elements on 2 : " << patch.number_of_elems_on_boundary(2) << "\n";
+//    std::cout << "Elements on 3 : " << patch.number_of_elems_on_boundary(3) << "\n";
+//    std::cout << "Elements on 4 : " << patch.number_of_elems_on_boundary(4) << "\n";
+
+//    std::cout << "degree on 1 : " << patch.degree_in_u() << "\n";
+//    std::cout << "degree on 2 : " << patch.degree_in_v() << "\n";
+
+//    std::cout << "Points on 1 : " << patch.pnts_in_u() << "\n";
+//    std::cout << "Points on 2 : " << patch.pnts_in_v() << "\n";
+
+
+
+}

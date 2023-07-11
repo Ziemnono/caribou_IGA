@@ -6,6 +6,7 @@
 #include <Caribou/Topology/BaseSplinePatch.h>
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Geometry/NurbsSurf.h>
+#include <Caribou/Geometry/NurbsCrv.h>
 
 #include <Eigen/Dense>
 #include <memory>
@@ -92,12 +93,15 @@ public:
 //    using NodeIndex = UNSIGNED_INTEGER_TYPE;
 
     using Element = geometry::NurbsSurf<WorldDimension>;
+    using B_Element = geometry::NurbsSurf<WorldDimension>;
     //
     using ElementIndices = Eigen::Matrix<NodeIndex, geometry::traits<Element>::NumberOfNodesAtCompileTime, 1>;
     using ElementsIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, geometry::traits<Element>::NumberOfNodesAtCompileTime, Eigen::RowMajor>;
     using ElementsKnotrange = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, geometry::traits<Element>::CanonicalDimension * 2, Eigen::RowMajor>; // 4 -> [u1, v1, u2, v2]
 
     using DynVector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
+    using DyniVector = Eigen::Matrix<NodeIndex, Eigen::Dynamic, 1>;
+    using BoundaryIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     /**
      * Holder type that contains the nodes of the SplinePatch
@@ -207,6 +211,195 @@ public:
     }
 
     // ================== Our specialization ends ===========================
+
+    // ================== Bondary detection Start ===========================
+
+    inline int number_of_zeros(const DynVector& knot_vector){
+        int count = -1;
+        for (int i = 0; i < knot_vector.size(); ++i) {
+            if (knot_vector[i] == 0.0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    inline int degree_in_u(){
+        return number_of_zeros(this->p_knot_1);
+    }
+
+    inline int degree_in_v(){
+        return number_of_zeros(this->p_knot_2);
+    }
+
+    inline int pnts_in_u(){
+        return this->p_knot_1.size() - degree_in_u() - 1;
+    }
+
+    inline int pnts_in_v(){
+        return this->p_knot_2.size() - degree_in_v() - 1;
+    }
+
+
+
+    /*!
+     * \brief Number of elements in a parametric direction.
+     * \param knot_vector of a parametric direction. either U or V.
+     * \return number of elements in a parametric direction.
+     */
+    inline int number_of_elems_para(const DynVector& knot_vector){
+        int n_elems = 0; // Number of elements
+        for (int i = 1; i < knot_vector.size(); i++)
+        {
+            if (knot_vector[i-1] != knot_vector[i]){
+                n_elems = n_elems+1;
+            }
+        }
+        return n_elems;
+    }
+    /*!
+     * Number of elements on a boundary
+     *
+     *      +---------------+
+     *      |      3        |
+     *   V  |               |
+     *   ^  | 4           2 |
+     *   |  |               |
+     *      |      1        |
+     *      +---------------+
+     *        --> U
+     * In a NURBS Patch, there will be 4 boundaries.
+     * Number of elements on 1st and 3rd boundary will depend upon valid spans in U parametric direction.
+     * Number of elements on 2nd and 4th boundary will depend upon valid spans in V parametric direction.
+     * @param The boundary of interest number.
+     * @return Number of elements on particular boundary.
+     */
+    inline int number_of_elems_on_boundary(const int& boundary){
+        DynVector knot;
+        if (boundary == 1 || boundary == 3){
+            knot = this->p_knot_1;
+        }
+        else if (boundary == 2 || boundary == 4){
+            knot = this->p_knot_2;
+        }
+        else {
+            std::cout << "Please provide valid boundary number.\n";
+            return -1;
+        }
+        return number_of_elems_para(knot);
+    }
+
+    inline DyniVector boundary_indices(const ElementIndices& indices, const int & boundary ){
+        int cp = degree_in_u()+1;
+        int cq = degree_in_v()+1;
+        int index = 0;
+        DyniVector b_indices;
+        if (boundary == 1 || boundary == 3 ){
+            b_indices.resize(cp);
+            // Bottom
+            if (boundary == 1){
+                index = 0;
+                for (int i = 0; i < cp; i++){
+                    b_indices[index] = indices[i];
+                    index++;
+                }
+            }
+            // Top
+            else{
+                index = 0;
+                for (int i = cp*(cq-1); i < cp*cq; i++){
+                    b_indices[index] = indices[i];
+                    index++;
+                }
+            }
+        }
+
+        if (boundary == 2 || boundary == 4 ){
+            b_indices.resize(cq);
+            // Right
+            if (boundary == 2){
+                index = 0;
+                for (int i = cp-1; i < cp*cq; i = i + cp){
+                    b_indices[index] = indices[i];
+                    index++;
+                }
+            }
+            // Left
+            else{
+                index = 0;
+                for (int i = 0; i < cp*cq; i = i + cp){
+                    b_indices[index] = indices[i];
+                    index++;
+                }
+            }
+        }
+        return b_indices;
+    }
+
+    inline BoundaryIndices boundary_elems_nodes(const int & boundary){
+
+        const int elements_u = number_of_elems_on_boundary(1); // n
+        const int elements_v = number_of_elems_on_boundary(2); // m
+        const int cp = degree_in_u()+1;
+        const int cq = degree_in_v()+1;
+
+        BoundaryIndices element_indices;
+        BoundaryIndices temp_indices;
+
+        int start = 0;
+        int end = 0;
+        int step = 0;
+        int points = 0;
+
+        if (boundary == 1 || boundary == 3) {
+            points = cp;
+            element_indices.resize(elements_u, points);
+            if (boundary == 1){
+                start = 0;
+                end = elements_u;
+                step = 1;
+            }
+            else{
+                start = (elements_v - 1) * elements_u;
+                end = elements_v * elements_u;
+                step = 1;
+            }
+        }
+
+        else if (boundary == 2 || boundary == 4) {
+            points = cq;
+            element_indices.resize(elements_v, points);
+            if (boundary == 2) {
+                start = elements_u - 1;
+                end = elements_v * elements_u;
+                step = elements_u;
+            }
+            else {
+                start = 0;
+                end = elements_v * elements_u;
+                step = elements_u;
+            }
+        }
+
+        else{
+            std::cerr << "\nChoose correct boundary type\n";
+        }
+        int count = 0;
+        for (int i = start; i < end; i+=step) {
+            temp_indices = boundary_indices(this->p_indices.row(i), boundary);
+            for (int j = 0; j < points; ++j) {
+                element_indices(count, j) = temp_indices(j);
+            }
+            count++;
+        }
+
+        return element_indices;
+
+    }
+
+
+    // ==================  Boundary detection End  ===========================
+
 
 
     /*! Copy constructor */
