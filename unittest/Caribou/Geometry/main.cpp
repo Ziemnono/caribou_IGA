@@ -73,6 +73,7 @@ template <typename Derived>
 #include "test_beziercrv.h"
 #include "test_beziersurf.h"
 #include "test_nurbssurf.h"
+#include "test_nurbscrv.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
