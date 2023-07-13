@@ -16,6 +16,7 @@
 #include <SofaCaribou/Python/Forcefield/ElasticSplineForcefield.h>
 
 #include <SofaCaribou/Python/Forcefield/HyperelasticSplineForcefield.h>
+#include <SofaCaribou/Python/Forcefield/TractionSplineForcefield.h>
 #include <vector>
 #include <pybind11/stl_bind.h>
 
