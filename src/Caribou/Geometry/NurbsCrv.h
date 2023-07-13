@@ -275,14 +275,7 @@ private:
         Dyn_Vector fac = this->p_weights.array()/(w*w);
         N = N.array() * fac.array() * w;
         Nderis = (Nderis*w - N*dwdxi).array() * fac.array();
-//        for(int i = 0; i <= Degree; i++)
-//        {
 
-
-//            fac      = this->p_weights[i]/(w*w);
-//            N[i]     = N[i]*fac*w;
-//            Nderis[i] = (Nderis[i]*w - N[i]*dwdxi) * fac;
-//        }
         return Nderis;
     };
 

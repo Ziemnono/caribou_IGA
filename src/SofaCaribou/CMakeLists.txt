@@ -33,6 +33,10 @@ set(HEADER_FILES
     Forcefield/ElasticSplineForcefield.h
     Forcefield/ElasticSplineForcefield[NurbsSurf].h
 
+    # Traction force field
+    Forcefield/TractionSplineForcefield.h
+    Forcefield/TractionSplineForcefield[NurbsSurf].h
+
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
@@ -110,6 +114,9 @@ set(TEMPLATE_FILES
     # Hyper elastic spline forcefield
     Forcefield/ElasticSplineForcefield.inl
 
+    # Traction force field
+    Forcefield/TractionSplineForcefield.inl
+
     Mapping/CaribouBarycentricMapping.inl
     Mass/CaribouMass.inl
 
@@ -150,6 +157,9 @@ set(SOURCE_FILES
     Forcefield/ElasticSplineForcefield[NurbsSurf].cpp
     # Hyper elastic spline forcefield
     Forcefield/HyperelasticSplineForcefield[NurbsSurf].cpp
+
+    # Traction Spline forcefield
+    Forcefield/TractionSplineForcefield[NurbsSurf].cpp
 
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp

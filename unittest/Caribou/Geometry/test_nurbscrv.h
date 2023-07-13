@@ -37,6 +37,8 @@ TEST(NurbsCrv, Basis) {
         std::cout << "Basis functions at " << elem_1.L(LocalCoordinates(1)) << "\n";
         std::cout << "Basis derivative :  \n " << elem_1.dL(LocalCoordinates(1)).transpose() << "\n";
 
+        std::cout << "Jacobian at 0 :  \n " << elem_1.jacobian(LocalCoordinates(0)) << "\n";
+
         std::cout << "\n ############# OUT NURBS curve ###############\n";
     }
 }

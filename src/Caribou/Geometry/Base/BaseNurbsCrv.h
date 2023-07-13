@@ -48,6 +48,10 @@ struct BaseNurbsCrv : public Element<Derived> {
         p_nodes(nodes.derived().template cast<typename Base::Scalar>()), p_knots(knots) ,
         p_weights(weights), p_knot_span(knot_span) {}
 
+    explicit BaseNurbsCrv(const Dyn_Matrix & nodes, const Dyn_Vector & knots,
+                          const Dyn_Vector & weights, const Dyn_Vector & knot_span) :
+        p_nodes(nodes), p_knots(knots), p_weights(weights), p_knot_span(knot_span) {}
+
     /** Constructor from an Eigen matrix reference containing the positions of the segment's nodes */
     template<typename EigenType, int Options, typename StrideType>
     explicit BaseNurbsCrv(const Eigen::Ref<EigenType, Options, StrideType> & nodes) : p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}

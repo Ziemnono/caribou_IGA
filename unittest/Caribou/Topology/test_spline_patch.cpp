@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include "topology_test.h"
 #include <Caribou/Topology/SplinePatch.h>
-#include <Caribou/Geometry/BezierSurf.h>
+#include <Caribou/Geometry/NurbsCrv.h>
+#include <Caribou/Geometry/NurbsSurf.h>
 
 using namespace caribou;
 using namespace caribou::geometry;
@@ -84,10 +85,10 @@ TEST (Splinepatch, XY_RECTANGLE) {
     std::cout << "all weights " << patch.weights() << "\n";
     std::cout << "all indices " << patch.indices() << "\n";
     std::cout << "all positions " << patch.positions().node(0) << "\n";
-    std::cout << "Boundary 1 \n" << patch.boundary_elems_nodes(1) << "\n";
-    std::cout << "Boundary 2 \n" << patch.boundary_elems_nodes(2) << "\n";
-    std::cout << "Boundary 3 \n" << patch.boundary_elems_nodes(3) << "\n";
-    std::cout << "Boundary 4 \n" << patch.boundary_elems_nodes(4) << "\n";
+    std::cout << "Boundary 1 \n" << patch.element_boundary_nodes(1,0) << "\n";
+    std::cout << "Boundary 2 \n" << patch.element_boundary_nodes(2,0) << "\n";
+    std::cout << "Boundary 3 \n" << patch.element_boundary_nodes(3,0) << "\n";
+    std::cout << "Boundary 4 \n" << patch.element_boundary_nodes(4,0) << "\n";
 
 }
 
@@ -157,21 +158,15 @@ TEST (Splinepatch, bounday_indices) {
     std::cout << "all weights " << patch.weights() << "\n";
     std::cout << "all indices " << patch.indices() << "\n";
     std::cout << "all positions " << patch.positions().node(0) << "\n";
-    std::cout << "Boundary 1 \n" << patch.boundary_elems_nodes(1) << "\n";
-    std::cout << "Boundary 2 \n" << patch.boundary_elems_nodes(2) << "\n";
-    std::cout << "Boundary 3 \n" << patch.boundary_elems_nodes(3) << "\n";
-    std::cout << "Boundary 4 \n" << patch.boundary_elems_nodes(4) << "\n";
-//    std::cout << "Elements on 1 : " << patch.number_of_elems_on_boundary(1) << "\n";
-//    std::cout << "Elements on 2 : " << patch.number_of_elems_on_boundary(2) << "\n";
-//    std::cout << "Elements on 3 : " << patch.number_of_elems_on_boundary(3) << "\n";
-//    std::cout << "Elements on 4 : " << patch.number_of_elems_on_boundary(4) << "\n";
-
-//    std::cout << "degree on 1 : " << patch.degree_in_u() << "\n";
-//    std::cout << "degree on 2 : " << patch.degree_in_v() << "\n";
-
-//    std::cout << "Points on 1 : " << patch.pnts_in_u() << "\n";
-//    std::cout << "Points on 2 : " << patch.pnts_in_v() << "\n";
+    std::cout << "Boundary 1 \n" << patch.element_boundary_nodes(1,0) << "\n";
+    std::cout << "Boundary 2 \n" << patch.element_boundary_nodes(2,0) << "\n";
+    std::cout << "Boundary 3 \n" << patch.element_boundary_nodes(3,0) << "\n";
+    std::cout << "Boundary 3 : 2 \n" << patch.element_boundary_nodes(3,2) << "\n";
+    std::cout << "Boundary 4 \n" << patch.element_boundary_nodes(4,0) << "\n";
 
 
+    auto crv = patch.boundary_element(1,0);
+    std::cout << "\nprinting the bottom crv\n";
+    crv.print();
 
 }
