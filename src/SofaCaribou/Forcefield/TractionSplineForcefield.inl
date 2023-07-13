@@ -21,10 +21,10 @@ namespace SofaCaribou::forcefield {
 template <typename Element>
 TractionSplineForcefield<Element>::TractionSplineForcefield()
     : d_traction(initData(&d_traction,
-               "traction vector",
+               "traction",
                "Loading on a boundary with directions."))
     , d_boundary(initData(&d_boundary,
-               "Boundary of surface",
+               "boundary",
                "Where traction is being applied."))
 {
 }
@@ -33,7 +33,7 @@ template <typename Element>
 void TractionSplineForcefield<Element>::init()
 {
     Inherit::init();
-
+    std::cout << "\nHello I am in Traction Spline\n";
     // Initializing the elements;
     initialize_elements();
     apply_load();
@@ -44,10 +44,22 @@ void TractionSplineForcefield<Element>::init()
 template <typename Element>
 void TractionSplineForcefield<Element>::apply_load()
 {
+    std::cout << "\nHello I am in Traction Spline : Load\n";
     sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
 
     const auto rest_positions = this->getMState()->readRestPositions();
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0 (rest_positions.ref().data()->data(),  rest_positions.size(), Dimension);
+
+    const auto nb_nodes = X0.rows();
+
+    std::cout << "Number of nodes : " << nb_nodes << "\n";
+
+    nodal_forces.resize(nb_nodes);
+
+    for (int i=0; i < nb_nodes; i++){
+        std::cout << "Printing nodal_forces : " << " i : " << nodal_forces[i]<< "\n";
+    }
+
 
     const int & boundary = d_boundary.getValue();
 
@@ -63,6 +75,9 @@ void TractionSplineForcefield<Element>::apply_load()
     }
 
     Deriv traction = d_traction.getValue();
+
+    std::cout << "Boundary is : " << boundary << "\n";
+    std::cout << "traction is : " << traction << "\n";
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
@@ -94,7 +109,12 @@ void TractionSplineForcefield<Element>::apply_load()
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 nodal_forces[node_indices[i]] += F*N[i];
             }
+
         }
+    }
+
+    for (int i=0; i < nb_nodes; i++){
+        std::cout << "Printing nodal_forces : " << i << " : " << nodal_forces[i]<< "\n";
     }
 }
 
@@ -116,7 +136,7 @@ void TractionSplineForcefield<Element>::addForce(const sofa::core::MechanicalPar
 template<typename Element>
 void TractionSplineForcefield<Element>::initialize_elements() {
     using namespace sofa::core::objectmodel;
-
+    std::cout << "\nHello I am in Traction Spline : Init Elements\n";
     sofa::helper::ScopedAdvancedTimer _t_ ("TractionSplineForcefield::initialize_elements");
 
     if (!this->mstate)
