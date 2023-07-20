@@ -116,8 +116,12 @@ void ElasticSplineForcefield<Element>::addForce(
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
-//    std::cout << "X position\n" << X << "\n";
-//    std::cout << "Forces\n" << forces << "\n";
+//    std::cout << "\n============================ 1 Elastic ADD Forece ============================\n";
+//    for (size_t i=0; i < sofa_f.size(); i++){
+//        std::cout << "Printing nodal_forces : " << i << " : " << sofa_f[i] << "\n";
+//    }
+//    std::cout << "\n============================ 1 Elastic ADD Forece ============================\n";
+
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::addForce");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -179,6 +183,12 @@ void ElasticSplineForcefield<Element>::addForce(
         }
     }
 
+//    std::cout << "\n============================ 2 Elastic ADD Forece ============================\n";
+//    for (size_t i=0; i < sofa_f.size(); i++){
+//        std::cout << "Printing nodal_forces : " << i << " : " << sofa_f[i] << "\n";
+//    }
+//    std::cout << "\n============================ 2 Elastic ADD Forece ============================\n";
+
     sofa::helper::AdvancedTimer::stepEnd("ElasticSplineForcefield::addForce");
 
     // This is the only I found to detect when a stiffness matrix reassembly is needed for calls to addDForce
@@ -203,8 +213,8 @@ void ElasticSplineForcefield<Element>::addDForce(
     sofa::helper::ReadAccessor<Data<VecDeriv>> sofa_dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_df = d_df;
 
-    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, 1>> DX   (&(sofa_dx[0][0]), sofa_dx.size()*3);
-    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, 1>>       DF   (&(sofa_df[0][0]), sofa_df.size()*3);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, 1>> DX   (&(sofa_dx[0][0]), sofa_dx.size()*2);
+    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, 1>>       DF   (&(sofa_df[0][0]), sofa_df.size()*2);
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::addDForce");
 
@@ -315,6 +325,7 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
 
+        const auto J2 = p_jacobian_pp[element_id];
         // Compute the nodal displacement
         Matrix<NumberOfNodesPerElement, Dimension> U {};
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
@@ -345,7 +356,7 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
             const Mat22 C = F.transpose() * F;
 
             // Add the potential energy at gauss node
-            Psi += (detJ * w) *  material->strain_energy_density(J, C);
+            Psi += (detJ * J2 * w) *  material->strain_energy_density(J, C);
         }
     }
 
@@ -355,8 +366,7 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
 }
 
 template <typename Element>
-void ElasticSplineForcefield<Element>::initialize_elements()
-{
+void ElasticSplineForcefield<Element>::initialize_elements() {
     using namespace sofa::core::objectmodel;
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::initialize_elements");
@@ -434,10 +444,14 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
     const auto nDofs = nb_nodes*Dimension;
     p_K.resize(nDofs, nDofs);
 
+    std::cout << "Elasticity Matrix : \n" << material->elasticity_matrix() << "\n";
+
     ///< Triplets are used to store matrix entries before the call to 'compress'.
     /// Duplicates entries are summed up.
     std::vector<Eigen::Triplet<Real>> triplets;
     triplets.reserve(nDofs*24*2);
+
+    std::cout << "\n ================ In Assembly ================= \n";
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::update_stiffness");
 #pragma omp parallel for if (enable_multithreading)
@@ -480,18 +494,21 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
                 B(2, i*Dimension + 1) = dN_dx(i, 0);
             }
 
-//            std::cout << "\n --------------------Start-------------------------------\n";
-//            std::cout << "Gauss point : " << count << "\n";
-//            std::cout << "B Matrix \n" << B << "\n";
-//            std::cout << "B Matrix size\n" << dN_dx << "\n";
-//            std::cout << "Elasticity Matrix  : \n" << p_C << "\n";
-//            std::cout << "Normal jacob : " << detJ << "\n";
-//            std::cout << "IGA jacob : " << J2 << "\n";
+//            std::cout << "\n ------------------- Start -----------------------------\n";
+//            std::cout << "Gauss point : " << count << " -- ";
 //            std::cout << "Weight : " << w << "\n";
+//            std::cout << "J1 : " << detJ << "\n";
+//            std::cout << "J2 : " << J2 << "\n";
+//            std::cout << "dN_dx Matrix size\n" << dN_dx << "\n";
+
+//            std::cout << "B Matrix size\n" << B.transpose() << "\n";
+//            std::cout << "\n ---------------------- END -------------------------------\n";
+
             Ke = Ke + B.transpose() * D * B * detJ * J2 * w;
             count = count + 1;
         }
-//        std::cout << "\n Element stiffness \n" << Ke << "\n";
+//        std::cout << "Element no : \n" << element_id << "\n";
+//        std::cout << "Elastic stiffness Matrix : \n" << Ke << "\n";
 
 
 #pragma omp critical
@@ -516,6 +533,20 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
         }
     }
     p_K.setFromTriplets(triplets.begin(), triplets.end());
+
+    std::cout << "Non-zero elements of the sparse matrix:" << std::endl;
+    for (int k = 0; k < p_K.outerSize(); ++k) {
+        for (Eigen::SparseMatrix<FLOATING_POINT_TYPE>::InnerIterator it(p_K, k); it; ++it) {
+            int row = it.row();
+            int col = it.col();
+            double value = it.value();
+            if (row < 15 && col < 15 ){
+                std::cout << "Row: " << row << ", Column: " << col << ", Value: " << value << std::endl;
+            }
+        }
+    }
+
+    std::cout << "\n ================ End Assembly ================= \n";
     sofa::helper::AdvancedTimer::stepEnd("ElasticSplineForcefield::update_stiffness");
 
     K_is_up_to_date = true;
