@@ -50,9 +50,10 @@ patch = SplinePatch(nodes, weights, i_indices, knot1, knot2, knot_ranges)
 
 element_type = "NurbsSurf_2D"
 
-FORCES = [0, 1000, 0]
+FORCES = [0, 100, 0]
 
 material = "PlaneStress"
+
 
 class ControlFrame(Sofa.Core.Controller):
 

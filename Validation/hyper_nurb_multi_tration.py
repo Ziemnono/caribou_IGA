@@ -16,22 +16,30 @@ from Caribou.Topology import SplinePatch
 
 # TODO NURBS Geometry data
 
-nodes = np.array([[0., 0.], [1., 0.], [2., 0.], [0., 1.], [1., 1.],
-                  [2., 1.], [0., 2.], [1., 2.], [2., 2.]])
+nodes = np.array([[0., 0.], [1., 0.], [2., 0.], [3., 0.],
+                  [0., 1.], [1., 1.], [2., 1.], [3., 1.],
+                  [0., 2.], [1., 2.], [2., 2.], [3., 2.],
+                  [0., 3.], [1., 3.], [2., 3.], [3., 3.]])
 nodes = np.array(nodes, dtype=np.float64)
-weights = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
+weights = np.array([1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0])
 weights =  np.array(weights, dtype=np.float64)
 
-i_indices = np.array([0,1,2,3,4,5,6,7,8])
+i_indices = np.array([[0, 1, 2, 4, 5, 6, 8, 9, 10],
+                      [1, 2, 3, 5, 6, 7, 9, 10, 11],
+                      [4, 5, 6, 8, 9, 10, 12, 13, 14],
+                      [5, 6, 7, 9, 10, 11, 13,14, 15]])
 i_indices = np.array(i_indices, dtype=np.uint64)
 
-knot_ranges = np.array([0.0, 0.0, 1.0, 1.0])
+knot_ranges = np.array([[0.0, 0.0, 0.5, 0.5],
+                        [0.5, 0.0, 1.0, 0.5],
+                        [0.0, 0.5, 0.5, 1.0],
+                        [0.5, 0.5, 1.0, 1.0]])
 knot_ranges = np.array(knot_ranges, dtype=np.float64)
 
-knot1 = np.array([0., 0., 0., 1., 1., 1.])
+knot1 = np.array([0., 0., 0., 0.5, 1., 1., 1.])
 knot1 = np.array(knot1, dtype=np.float64)
 
-knot2 = np.array([0., 0., 0., 1., 1., 1.])
+knot2 = np.array([0., 0., 0., 0.5, 1., 1., 1.])
 knot2 = np.array(knot2, dtype=np.float64)
 patch = SplinePatch(nodes, weights, i_indices, knot1, knot2, knot_ranges)
 #patch = SplinePatch(nodes, weights, i_indices, knot1, knot2, knotranges)
@@ -52,7 +60,8 @@ element_type = "NurbsSurf_2D"
 
 FORCES = [0, 1000, 0]
 
-material = "PlaneStress"
+material = "SaintVenantKirchhoff2D"
+
 
 class ControlFrame(Sofa.Core.Controller):
 
@@ -77,10 +86,10 @@ class ControlFrame(Sofa.Core.Controller):
                              indices=patch.indices().tolist(), knot_1 = patch.knot_1().tolist(),
                              knot_2 = patch.knot_2().tolist(), weights = patch.all_weights().tolist(), knot_spans = knot_ranges.tolist())
 #        sofa_node.addObject('CaribouMass', density = 0.1)
-        sofa_node.addObject('FixedConstraint', indices=[0, 1, 2])
+        sofa_node.addObject('FixedConstraint', indices=[0, 1, 2, 3])
         sofa_node.addObject('TractionSplineForcefield', traction=FORCES, boundary = 3)
         sofa_node.addObject(material + "Material", young_modulus="10000", poisson_ratio="0.3")
-        sofa_node.addObject('ElasticSplineForcefield', template = element_type, printLog=True)
+        sofa_node.addObject('HyperelasticSplineForcefield', template = element_type, printLog=True)
 
         self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
         print("Nurbs Initial Positions ", self.sofa_rest_position)

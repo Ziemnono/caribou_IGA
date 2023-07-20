@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 8.0.1, 2023-05-17T10:23:31. -->
+<!-- Written by QtCreator 8.0.1, 2023-07-20T11:43:02. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -70,12 +70,6 @@
    <valuemap type="QVariantMap" key="AutoTest.CheckStates">
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Mechanics">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Mechanics/main.cpp:Strain">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:NURBSReader">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:knot_test_geo">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:plate_hole">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:plate_hole_integration">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:quarter_cyl">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_NURBSReader.cpp:xy_rectangle">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:BarycentricContainer">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_barycentric_container.cpp:_2D">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_domain.cpp:Domain">Checked</value>
@@ -87,6 +81,9 @@
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Segment">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Tetrahedron">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_mesh.cpp:Triangle">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_spline_patch.cpp:Splinepatch">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_spline_patch.cpp:XY_RECTANGLE">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/Caribou/Topology/test_spline_patch.cpp:bounday_indices">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:Algebra">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullDDotProduct">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullFDotProduct">Checked</value>
@@ -98,6 +95,8 @@
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorByCopy">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorByReference">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorCreation">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Forcefield/test_elasticsplineforcefield.cpp:ElasticSplineForcefield">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Forcefield/test_elasticsplineforcefield.cpp:NurbsSurf_from_SOFA">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Forcefield/test_hyperelasticforcefield.cpp:Hexahedron_from_SOFA">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Forcefield/test_hyperelasticforcefield.cpp:HyperelasticForcefield">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Forcefield/test_tractionforce.cpp:Quad">Checked</value>
@@ -115,7 +114,9 @@
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/ODE/test_static.cpp:InitWithoutSolver">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/ODE/test_static.cpp:StaticODESolver">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:CaribouSplineTopology">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:NurbsSurf2DAttachPatch">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:NS2D_AttachPatch_PlateHole">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:NS2D_AttachPatch_Rectangle">Checked</value>
+    <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_caribousplinetopology.cpp:NURBSFromIndices">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:FictitiousGrid">Checked</value>
     <value type="Qt::CheckState" key="1@/home/bhagath/code/plugins/caribou_IGA/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:Liver">Checked</value>
    </valuemap>
@@ -130,6 +131,9 @@
     <valuelist type="QVariantList" key="ClangTools.SelectedFiles"/>
     <valuelist type="QVariantList" key="ClangTools.SuppressedDiagnostics"/>
     <value type="bool" key="ClangTools.UseGlobalSettings">true</value>
+   </valuemap>
+   <valuemap type="QVariantMap" key="CppEditor.QuickFix">
+    <value type="bool" key="UseGlobalSettings">true</value>
    </valuemap>
   </valuemap>
  </data>
