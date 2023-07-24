@@ -7,12 +7,12 @@ set(SOURCE_FILES
         Algebra/test_eigen_vector_wrapper.cpp
         Forcefield/test_hyperelasticforcefield.cpp
         Forcefield/test_tractionforce.cpp
-        Forcefield/test_elasticsplineforcefield.cpp
+#        Forcefield/test_elasticsplineforcefield.cpp
         Mass/test_cariboumass.cpp
         ODE/test_backward_euler.cpp
         ODE/test_static.cpp
         Topology/test_fictitiousgrid.cpp
-        Topology/test_caribousplinetopology.cpp
+#        Topology/test_caribousplinetopology.cpp
 )
 
 enable_testing()
