@@ -17,10 +17,10 @@ struct BaseNurbsCrv : public Element<Derived> {
 
     using GaussNode = typename Base::GaussNode;
 
-    template <UNSIGNED_INTEGER_TYPE Dim>
+    template <INTEGER_TYPE Dim>
     using Vector = typename Base::template Vector<Dim>;
 
-    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols>
     using Matrix = typename Base::template Matrix<Rows, Cols>;
 
     using Scalar = typename Base::Scalar;
@@ -38,32 +38,11 @@ struct BaseNurbsCrv : public Element<Derived> {
     BaseNurbsCrv() = default;
 
     /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
-    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseNurbsCrv(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
-
-    /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
-    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseNurbsCrv(const Eigen::EigenBase<EigenType> & nodes,
+    template<typename EigenType>
+    explicit BaseNurbsCrv(const UNSIGNED_INTEGER_TYPE & degree_u, const Eigen::EigenBase<EigenType> & nodes,
                            Dyn_Vector knots, Dyn_Vector weights, Dyn_Vector knot_span) :
-        p_nodes(nodes.derived().template cast<typename Base::Scalar>()), p_knots(knots) ,
-        p_weights(weights), p_knot_span(knot_span) {}
-
-    explicit BaseNurbsCrv(const Dyn_Matrix & nodes, const Dyn_Vector & knots,
-                          const Dyn_Vector & weights, const Dyn_Vector & knot_span) :
-        p_nodes(nodes), p_knots(knots), p_weights(weights), p_knot_span(knot_span) {}
-
-    /** Constructor from an Eigen matrix reference containing the positions of the segment's nodes */
-    template<typename EigenType, int Options, typename StrideType>
-    explicit BaseNurbsCrv(const Eigen::Ref<EigenType, Options, StrideType> & nodes) : p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
-
-    /** Constructor from a serie of nodes. */
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
-    >
-    explicit BaseNurbsCrv(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
+        p_degree_u(degree_u), p_nodes(nodes.derived().template cast<typename Base::Scalar>()), p_knots(knots) ,
+        p_weights(weights), p_knot_span(knot_span) {
     }
 
     inline auto jacobian_papa() const -> Scalar {
@@ -75,8 +54,8 @@ private:
     // Implementations
     friend struct Element<Derived>;
     [[nodiscard]]
-    inline auto get_number_of_nodes() const {return NumberOfNodesAtCompileTime;}
-    inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
+    inline auto get_number_of_nodes() const {return p_nodes.rows();}
+    inline auto get_number_of_gauss_nodes() const {return p_degree_u+1;}
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0,0));};
@@ -84,23 +63,13 @@ private:
         return IN_CLOSED_INTERVAL(-1-eps, xi, 1+eps);
     }
 
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
 protected:
+    UNSIGNED_INTEGER_TYPE p_degree_u;
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
-    Dyn_Vector p_knots;
-    Dyn_Vector p_weights;
-    Dyn_Vector p_knot_span;
+    Vector<-1> p_knots;
+    Vector<-1> p_weights;
+    Vector<-1> p_knot_span;
+
 };
 
 }

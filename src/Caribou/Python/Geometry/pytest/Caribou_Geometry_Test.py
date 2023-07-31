@@ -39,6 +39,7 @@ def p2(p):
 
 class TestNurbsSurf(unittest.TestCase):
     def test_nurbs(self):
+        degrees = [2,2]
         nodes = [[0, 0], [0, 1], [0, 2],
                  [1, 0], [1, 1], [1, 2],
                  [2, 0], [2, 1], [2, 2]]
@@ -47,7 +48,7 @@ class TestNurbsSurf(unittest.TestCase):
         knot2 = knot1
         weights = [1,1,1,1,1,1,1,1,1]
         knotspan = [0, 0, 1, 1]
-        s = NurbsSurf(nodes, knot1, knot2, weights, knotspan)
+        s = NurbsSurf(degrees, nodes, knot1, knot2, weights, knotspan)
         self.assertEqual(s.jacobian_papa(), 0.25)
 
 class TestSpline(unittest.TestCase):

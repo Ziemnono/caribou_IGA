@@ -55,13 +55,14 @@ void create_nurbs_surf(pybind11::module & m) {
     }, py::arg("dimension"));
 
     using dyn_vec = NurbsSurf<_2D>::Dyn_Vector;
+    using usint_vec = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, 2, 1>; // Unsigned integer vector type.
 
     // 2D
-    m.def("NurbsSurf", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 9, 2> & nodes,dyn_vec knot_1,
+    m.def("NurbsSurf", [](const usint_vec & degrees, const Eigen::Matrix<FLOATING_POINT_TYPE, -1, 2> & nodes,dyn_vec knot_1,
           const dyn_vec knot_2, const dyn_vec weights, const dyn_vec knot_span)
     {
-        return py::cast(NurbsSurf<_2D>(nodes, knot_1, knot_2, weights, knot_span));
-    }, py::arg("nodes"), py::arg("knot_1"), py::arg("knot_2"), py::arg("weights"), py::arg("knot_span"));
+        return py::cast(NurbsSurf<_2D>(degrees, nodes, knot_1, knot_2, weights, knot_span));
+    }, py::arg("degrees"), py::arg("nodes"), py::arg("knot_1"), py::arg("knot_2"), py::arg("weights"), py::arg("knot_span"));
 
 }
 

@@ -17,10 +17,10 @@ struct BaseNurbsSurf : public Element<Derived> {
 
     using GaussNode = typename Base::GaussNode;
 
-    template <UNSIGNED_INTEGER_TYPE Dim>
+    template <INTEGER_TYPE Dim>
     using Vector = typename Base::template Vector<Dim>;
 
-    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols>
     using Matrix = typename Base::template Matrix<Rows, Cols>;
 
     using Scalar = typename Base::Scalar;
@@ -38,29 +38,11 @@ struct BaseNurbsSurf : public Element<Derived> {
     BaseNurbsSurf() = default;
 
     /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
-    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseNurbsSurf(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
-
-    /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
-    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseNurbsSurf(const Eigen::EigenBase<EigenType> & nodes,
+    template<typename EigenType>
+    explicit BaseNurbsSurf(const Eigen::Matrix<UNSIGNED_INTEGER_TYPE, 2, 1> & degrees, const Eigen::EigenBase<EigenType> & nodes,
                            Dyn_Vector knot_1, Dyn_Vector knot_2, Dyn_Vector weights, Dyn_Vector knot_span) :
-        p_nodes(nodes.derived().template cast<typename Base::Scalar>()), p_knot_1(knot_1), p_knot_2(knot_2),
+        p_degrees(degrees), p_nodes(nodes.derived().template cast<typename Base::Scalar>()), p_knot_1(knot_1), p_knot_2(knot_2),
         p_weights(weights), p_knot_span(knot_span) {}
-
-    /** Constructor from an Eigen matrix reference containing the positions of the segment's nodes */
-    template<typename EigenType, int Options, typename StrideType>
-    explicit BaseNurbsSurf(const Eigen::Ref<EigenType, Options, StrideType> & nodes) : p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
-
-    /** Constructor from a serie of nodes. */
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
-    >
-    explicit BaseNurbsSurf(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
 
     inline auto jacobian_papa() const -> Scalar {
         auto Jxi = 0.5 * (p_knot_span[2] - p_knot_span[0]);
@@ -72,8 +54,8 @@ private:
     // Implementations
     friend struct Element<Derived>;
     [[nodiscard]]
-    inline auto get_number_of_nodes() const {return NumberOfNodesAtCompileTime;}
-    inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
+    inline auto get_number_of_nodes() const {return p_nodes.rows();}
+    inline auto get_number_of_gauss_nodes() const {return p_nodes.rows();}
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0,0));};
@@ -83,19 +65,8 @@ private:
         return IN_CLOSED_INTERVAL(-1-eps, u, 1+eps) and IN_CLOSED_INTERVAL(-1-eps, v, 1+eps);
     }
 
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
 protected:
+    Eigen::Matrix<UNSIGNED_INTEGER_TYPE, 2, 1> p_degrees;
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
     Dyn_Vector p_knot_1;
     Dyn_Vector p_knot_2;

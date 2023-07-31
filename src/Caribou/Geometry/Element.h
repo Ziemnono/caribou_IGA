@@ -35,9 +35,6 @@ struct Element {
     template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
     using Matrix = Eigen::Matrix<Scalar, Rows, Cols, Options>;
 
-    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
-    using MatrixI = Eigen::Matrix<Scalar, Rows, Cols, Options>;
-
     static constexpr auto CanonicalDimension = traits<Derived>::CanonicalDimension;
     static constexpr auto Dimension = traits<Derived>::Dimension;
     static constexpr auto NumberOfNodesAtCompileTime = traits<Derived>::NumberOfNodesAtCompileTime;
@@ -49,7 +46,6 @@ struct Element {
         LocalCoordinates position;
         Scalar weight;
     };
-
 
     // Functions
     /** Get the number of nodes in the element */

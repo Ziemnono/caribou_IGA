@@ -13,6 +13,7 @@ set(HEADER_FILES
     Base/BaseNurbsSurf.h
     Base/BaseNurbsCrv.h
     Element.h
+    ElementSpline.h
     Hexahedron.h
     Quad.h
     RectangularHexahedron.h
@@ -25,6 +26,7 @@ set(HEADER_FILES
     BezierSurf.h
     NurbsSurf.h
     NurbsCrv.h
+    Qudrature.h
 )
 
 find_package(Eigen3 QUIET REQUIRED)
