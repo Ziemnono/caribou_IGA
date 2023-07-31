@@ -1,5 +1,3 @@
-#pragma once
-
 #ifdef LEGACY_CXX
 #include <experimental/filesystem>
 namespace fs = ::std::experimental::filesystem;
@@ -60,7 +58,10 @@ auto NURBSReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> NUR
     knot_1 = reader->get_knot_u();
     knot_2 = reader->get_knot_v();
 
-    PatchType * m =  new PatchType(nodes, weights, indices, knot_1, knot_2, knot_ranges);
+    USIVector degrees(2);
+    degrees(0) = reader->GetP();
+    degrees(1) = reader->GetQ();
+    PatchType * m =  new PatchType(degrees, nodes, weights, indices, knot_1, knot_2, knot_ranges);
 //    const auto axes = nurbs_extract_axes_from_3D_vectors<Dimension>(reader->GetPoints(), reader->GetNumberOfPoints());
     NURBSReader<Dimension, NodeIndex> nr(filepath, reader, m);
 //    free reader;
@@ -96,6 +97,7 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> PatchType{
 //        }
 //    }
 
+
     Double_Matrix nodes = p_reader->GetPoints();
     // Import Weights
     Double_Matrix weights = p_reader->GetWeights();
@@ -118,8 +120,11 @@ auto NURBSReader<Dimension, NodeIndex>::patch () const -> PatchType{
     DynVector knot_2(p_reader->get_knot_v_size());
     knot_1 = p_reader->get_knot_u();
     knot_2 = p_reader->get_knot_v();
+    USIVector degrees(2);
+    degrees(0) = p_reader->GetP();
+    degrees(1) = p_reader->GetQ();
 
-    m = PatchType(nodes, weights, indices, knot_1, knot_2, knot_ranges);
+    m = PatchType(degrees, nodes, weights, indices, knot_1, knot_2, knot_ranges);
     return m;
 }
 

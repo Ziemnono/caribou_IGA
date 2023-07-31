@@ -74,17 +74,17 @@ void declare_splinepatch(py::module & m){
     using Double_Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using ElementsIndices = typename M::ElementsIndices;
     using ElementsKnotrange = typename M::ElementsKnotrange;
-
-    m.def("SplinePatch", [](const MatrixType & positions, const DynVector & weights, const ElementsIndices & indices,
+    using USIVector = typename M::USIVector;
+    m.def("SplinePatch", [](const USIVector & degrees, const MatrixType & positions, const DynVector & weights, const ElementsIndices & indices,
                             const DynVector & knot_1, const DynVector & knot_2, const ElementsKnotrange & knotrange) {
-        return py::cast(M(positions, weights, indices, knot_1, knot_2, knotrange));
-    }, py::arg("positions").noconvert(), py::arg("weights").noconvert(), py::arg("indices").noconvert(),
+        return py::cast(M(degrees, positions, weights, indices, knot_1, knot_2, knotrange));
+    }, py::arg("degrees").noconvert(), py::arg("positions").noconvert(), py::arg("weights").noconvert(), py::arg("indices").noconvert(),
        py::arg("knot_1").noconvert(), py::arg("knot_2").noconvert(), py::arg("knotrange").noconvert());
 
-    m.def("SplinePatch", [](const Double_Matrix & positions, const DynVector & weights, const IndicesMatrix & indices,
+    m.def("SplinePatch", [](const USIVector & degrees, const Double_Matrix & positions, const DynVector & weights, const IndicesMatrix & indices,
                             const DynVector & knot_1, const DynVector & knot_2, const Double_Matrix & knotrange) {
-        return py::cast(M(positions, weights, indices, knot_1, knot_2, knotrange));
-    }, py::arg("positions").noconvert(), py::arg("weights").noconvert(), py::arg("indices").noconvert(),
+        return py::cast(M(degrees, positions, weights, indices, knot_1, knot_2, knotrange));
+    }, py::arg("degrees").noconvert(), py::arg("positions").noconvert(), py::arg("weights").noconvert(), py::arg("indices").noconvert(),
        py::arg("knot_1").noconvert(), py::arg("knot_2").noconvert(), py::arg("knotrange").noconvert());
 
 }

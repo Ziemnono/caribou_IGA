@@ -74,6 +74,7 @@ template <typename Derived>
 #include "test_beziersurf.h"
 #include "test_nurbssurf.h"
 #include "test_nurbscrv.h"
+#include "test_quadrature.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

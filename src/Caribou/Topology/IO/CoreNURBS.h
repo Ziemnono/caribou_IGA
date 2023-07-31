@@ -27,9 +27,7 @@ using Int_Vector = Vector<int>;
 using Double_Matrix = Matrix<FLOATING_POINT_TYPE>;
 using Int_Matrix = Matrix<int>;
 using USInt_Matrix = Matrix<UNSIGNED_INTEGER_TYPE>;
-
-
-
+using USIVector = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, 1>;
 
 namespace utils{
 
@@ -258,8 +256,8 @@ public:
 
 //    IGACellType GetCellType(void) const {return BezierSurf;};
     int GetNodesPerElement(void) const {return (p+1)*(q+1);};
-    int GetP(void) const {return p;};                                  // Degree p
-    int GetQ(void) const {return q;};                                  // Degree q
+    UNSIGNED_INTEGER_TYPE GetP(void) const {return p;};                                  // Degree p
+    UNSIGNED_INTEGER_TYPE GetQ(void) const {return q;};                                  // Degree q
     int GetReadDim(void) {return rdim;};                               // Dimensions of control points
     int GetNumberOfElementPoints(void) const {return (p+1)*(q+1);};    // Number of nodes per cell
     int get_no_pnts_u(void) const {return cp_u;};                      // Control points u

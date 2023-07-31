@@ -103,6 +103,8 @@ public:
     using DynVector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
     using DynMatrix = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+    // Unsigned integer vector
+    using USIVector = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, 1>;
     using DyniVector = Eigen::Matrix<NodeIndex, Eigen::Dynamic, 1>;
     using BoundaryIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
@@ -129,17 +131,18 @@ public:
 
     // ================== Our specialization starts =========================
 
-    explicit SplinePatch(const NodeContainer_t & positions, const DynVector & weights,
+    explicit SplinePatch(const USIVector & degrees, const NodeContainer_t & positions, const DynVector & weights,
                          const ElementsIndices & indices, const DynVector & knot_1, const DynVector & knot_2, const ElementsKnotrange & knotrange) :
-        p_nodes(positions), p_weights(weights), p_indices(indices), p_knot_1(knot_1), p_knot_2(knot_2), p_knotranges(knotrange)
+        p_degrees(degrees), p_nodes(positions), p_weights(weights), p_indices(indices), p_knot_1(knot_1), p_knot_2(knot_2), p_knotranges(knotrange)
     {
         std::cout << "\n1st constructor \n";
     }
 
     template <typename Derived>
-    explicit SplinePatch(const Eigen::MatrixBase<Derived> & positions, const DynVector & weights,
+    explicit SplinePatch(const USIVector & degrees, const Eigen::MatrixBase<Derived> & positions, const DynVector & weights,
                          const ElementsIndices & indices, const DynVector & knot_1, const DynVector & knot_2, const ElementsKnotrange & knotrange)
     {
+        p_degrees = degrees;
         static_assert(
             Eigen::MatrixBase<Derived>::ColsAtCompileTime == Dimension or Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic,
             "The number of columns at compile time should match the Dimension of the mesh, or by dynamic (known at compile time)."
@@ -166,9 +169,10 @@ public:
 
     }
 
-    explicit SplinePatch(const Double_Matrix & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
+    explicit SplinePatch(const USIVector & degrees, const Double_Matrix & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
                          const DynVector & knot_1, const DynVector & knot_2, const Double_Matrix & knotrange)
     {
+        p_degrees = degrees;
         // The number of columns must equal the World dnimension
         caribou_assert(positions.cols() == Dimension);
 
@@ -189,9 +193,10 @@ public:
         p_knotranges = knotrange;
     }
 
-    explicit SplinePatch(const std::vector<WorldCoordinates> & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
+    explicit SplinePatch(const USIVector & degrees, const std::vector<WorldCoordinates> & positions, const Double_Vector & weights, const Matrix<NodeIndex> & indices,
                          const DynVector & knot_1, const DynVector & knot_2, const Double_Matrix & knotrange)
     {
+        p_degrees = degrees;
         std::cout << "\n5th constructor \n";
         // The number of columns must equal the World dimension
         caribou_assert(positions[0].size() == Dimension);
@@ -254,7 +259,7 @@ public:
 
     [[nodiscard]]
     inline auto number_of_nodes_per_elements() const -> UNSIGNED_INTEGER_TYPE final {
-            return geometry::traits<Element>::NumberOfNodesAtCompileTime;
+            return (p_degrees[0]+1)*(p_degrees[1]+1);
     }
 
     [[nodiscard]]
@@ -268,16 +273,15 @@ public:
     inline auto indices(void) const -> ElementsIndices {
         return p_indices;
     }
-    inline auto element_indices(const UNSIGNED_INTEGER_TYPE & index) const {
+    inline auto element_indices(const UNSIGNED_INTEGER_TYPE & index) const -> ElementIndices {
         caribou_assert(index < number_of_elements() and "Trying to get an element that does not exists.");
 
-        return Eigen::Map<const Eigen::Matrix<NodeIndex, 1, geometry::traits<Element>::NumberOfNodesAtCompileTime>, Eigen::Unaligned, Eigen::Stride<1, Eigen::Dynamic>>(
-            p_indices.row(index).data(), {1, p_indices.innerStride()}
-        );
+        return p_indices.row(index);
     }
 
     void print_spline_patch(void) const {
 //        std::cout << "Control points : \n" << p_nodes  << "\n";
+        std::cout << "Degrees : " << p_degrees.transpose() << "\n";
         std::cout << "Weights \n" << p_weights.transpose() << "\n";
         std::cout << "Indices \n" << p_indices << "\n";
         std::cout << "Knot spans \n" << p_knotranges << "\n";
@@ -291,18 +295,18 @@ public:
 
         using NodeMatrix = typename geometry::Element<Element>::template Matrix<geometry::traits<Element>::NumberOfNodesAtCompileTime, Dimension>;
 
+        USIVector degrees = this->p_degrees;
         DynVector knot1;
         DynVector knot2;
-        DynVector weights(geometry::traits<Element>::NumberOfNodesAtCompileTime);
+        DynVector weights(number_of_nodes_per_elements());
         DynVector knot_span(geometry::traits<Element>::CanonicalDimension * 2);
 
         NodeMatrix node_positions;
         if constexpr (geometry::traits<Element>::NumberOfNodesAtCompileTime == caribou::Dynamic) {
             node_positions.resize(number_of_nodes_per_elements(), Dimension);
         }
-
-        const auto node_indices = element_indices(element_id);
-        for (std::size_t i = 0; i < static_cast<std::size_t>(node_indices.size()); ++i) {
+        const ElementIndices node_indices = element_indices(element_id);
+        for (std::size_t i = 0; i < static_cast<std::size_t>(node_indices.rows()); ++i) {
             auto p1 = node_positions.row(i);
             auto p2 = this->node(node_indices[i]);
             p1[0] = p2[0];
@@ -317,7 +321,9 @@ public:
         knot1 = this->p_knot_1;
         knot2 = this->p_knot_2;
         knot_span = this->p_knotranges.row(element_id);
-        return Element(node_positions, knot1, knot2, weights, knot_span);
+
+
+        return Element(degrees, node_positions, knot1, knot2, weights, knot_span);
     }
 
     inline auto element_knotranges(const UNSIGNED_INTEGER_TYPE & index) const {
@@ -793,6 +799,7 @@ public:
         int num_nodes;
         DynVector knots;
         DynVector span(2);
+        int degree;
         if (boundary == 1 || boundary == 3)
         {
             if (element_id >= number_of_elems_on_boundary(1)){
@@ -800,6 +807,7 @@ public:
             }
             num_nodes = degree_in_u()+1;
             knots = knot_1();
+            degree = p_degrees[0];
 
         }
 
@@ -810,6 +818,7 @@ public:
             }
             num_nodes = degree_in_v()+1;
             knots = knot_2();
+            degree = p_degrees[1];
 
         }
 
@@ -850,7 +859,7 @@ public:
         std::cout << "knot span  : \n" << span << "\n";
         std::cout << "==============================================\n";
 
-        return B_Element(node_positions, knots, weights, span);
+        return B_Element(degree, node_positions, knots, weights, span);
     }
 
 
@@ -863,7 +872,7 @@ public:
     {
         // enable ADL
         using std::swap;
-
+        swap(first.p_degrees, second.p_degrees);
         swap(first.p_nodes, second.p_nodes);
         swap(first.p_weights, second.p_weights);
         swap(first.p_indices, second.p_indices);
@@ -875,16 +884,9 @@ public:
 
 private:
 
-    /**
-     * Container of the mesh node positions
-     */
+    USIVector p_degrees;
     NodeContainer_t p_nodes;
-
-    /**
-     * Container of the mesh node weights
-     */
     DynVector p_weights;
-
     ElementsIndices p_indices;
 
     // Store U direction knot vector
