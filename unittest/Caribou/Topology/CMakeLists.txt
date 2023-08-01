@@ -24,6 +24,7 @@ set(MESH_FILES
     meshes/splines/xy_rectangle.txt
     meshes/splines/quarter_cylinder.txt
     meshes/splines/plate_hole_geo.txt
+    meshes/splines/linear_cubic_rectangle.txt
 
     meshes/1D_linear.vtk
     meshes/1D_quadratic.vtk

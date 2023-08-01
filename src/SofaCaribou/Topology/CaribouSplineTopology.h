@@ -43,6 +43,7 @@ using Int_Vector = Vector<int>;
 using Double_Matrix = Matrix<FLOATING_POINT_TYPE>;
 using Int_Matrix = Matrix<int>;
 using USInt_Matrix = Matrix<unsigned int>;
+using USInt_Vector = Vector<UNSIGNED_INTEGER_TYPE>;
 
 /**
  * The CaribouSplineTopology is a wrapper object over an instance of caribou::topology::Domain.
@@ -99,7 +100,7 @@ public:
     using LocalCoordinates = typename caribou::geometry::Element<Element>::LocalCoordinates;
     using WorldCoordinates = typename caribou::geometry::Element<Element>::WorldCoordinates;
     static constexpr INTEGER_TYPE Dimension = caribou::geometry::traits<Element>::Dimension;
-    static constexpr INTEGER_TYPE NumberOfNodes = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
+//    static constexpr INTEGER_TYPE NumberOfNodes = 9;
     static constexpr INTEGER_TYPE KnotDimension = 4;
     // SplinePatch typedef
     using SplinePatch = typename caribou::topology::SplinePatch<Dimension, PointID>;
@@ -197,11 +198,16 @@ public:
 private:
     // Data members
 
+    // Degrees
+    Data<sofa::type::vector<UNSIGNED_INTEGER_TYPE>> d_degrees;
+
     /// Position vector of the domain's nodes.
     Data<VecCoord> d_position;
 
     /// Node indices (w.r.t the position vector) of each elements.
-    Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
+//    Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
+    Data<sofa::type::vector<sofa::type::vector<PointID>>> d_indices;
+
 
 //    /// Knot ranges
     Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>> d_knot_spans;
