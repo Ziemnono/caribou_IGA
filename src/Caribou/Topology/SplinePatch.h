@@ -222,7 +222,7 @@ public:
 
     /*! Copy constructor */
     SplinePatch(const SplinePatch & other)
-    : p_nodes (other.p_nodes), p_weights (other.p_weights), p_indices(other.p_indices),
+    : p_degrees(other.p_degrees), p_nodes (other.p_nodes), p_weights (other.p_weights), p_indices(other.p_indices),
       p_knot_1(other.p_knot_1), p_knot_2(other.p_knot_2), p_knotranges(other.p_knotranges){ }
 
     /*! Move constructor */
@@ -572,6 +572,19 @@ public:
         return p_weights;
     }
     // ===================== Weights ===============================
+
+    // ====================== Degrees ==============================
+    inline auto degree_1() const {
+        return p_degrees[0];
+    }
+
+    inline auto degree_2() const {
+        return p_degrees[1];
+    }
+
+    inline auto get_degrees() const {
+        return p_degrees;
+    }
 
     // ===================== knots  ===============================
     inline auto size_knot_1() const {

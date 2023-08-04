@@ -11,7 +11,7 @@ site_packages_dir = (current_dir / '..' / '..' / 'lib' / 'python3' / 'site-packa
 sys.path.insert(0, str(site_packages_dir))
 print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
-#from Caribou.Topology import SplinePatch
+from Caribou.Topology import SplinePatch
 from Caribou.Topology import Mesh
 from Caribou.Topology import Grid3D
 from Caribou.Geometry import Segment, Segment3
@@ -24,6 +24,8 @@ meshfolder = os.path.join(os.path.dirname(__file__), '..', 'meshes')
 
 class TestSpline(unittest.TestCase):
     degrees = np.array([2, 2]);
+    degrees = np.array(degrees, dtype=np.ulonglong)
+
     nodes = np.array([[0., 0.], [1., 0.], [2., 0.], [0., 1.], [1., 1.],
                       [2., 1.], [0., 2.], [1., 2.], [2., 2.]])
     nodes = np.array(nodes, dtype=np.float64)
@@ -54,6 +56,9 @@ class TestSpline(unittest.TestCase):
 
     print("indices")
     print(s.indices())
+
+    print("degrees")
+    print(s.get_degrees())
 
 class TestMesh(unittest.TestCase):
 

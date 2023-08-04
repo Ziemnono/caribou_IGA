@@ -54,6 +54,8 @@ void declare_splinepatch(py::module & m){
         return m.weights(indices);
     }, py::arg("indices").noconvert());
 
+    c.def("get_degrees", &M::get_degrees);
+
     // knot_1 related functions
     c.def("size_knot_1", &M::size_knot_1);
     c.def("knot_1", &M::knot_1);
