@@ -15,8 +15,8 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
      // static constexpr UNSIGNED_INTEGER_TYPE Degree = 2; // NurbsCrv degree
      static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1; // 1 parametric direction.
      static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = -1; // NurbsCrv control points (p+1)*(q+1)
-     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = -1; // Gauss points per element
+     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = caribou::Dynamic; // NurbsCrv control points (p+1)*(q+1)
+     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = caribou::Dynamic; // Gauss points per element
  };
 
  /**

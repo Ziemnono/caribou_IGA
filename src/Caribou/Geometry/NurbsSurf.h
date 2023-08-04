@@ -15,8 +15,8 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
      // static constexpr UNSIGNED_INTEGER_TYPE Degree = 2; // NurbsSurf degree
      static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2; // Two parametric direction.
      static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = -1; // NurbsSurf control points (p+1)*(q+1)
-     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = -1; // Gauss points per element
+     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = caribou::Dynamic; // NurbsSurf control points (p+1)*(q+1)
+     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = caribou::Dynamic; // Gauss points per element
  };
 
  /**

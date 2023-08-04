@@ -55,7 +55,7 @@ private:
     friend struct Element<Derived>;
     [[nodiscard]]
     inline auto get_number_of_nodes() const {return p_nodes.rows();}
-    inline auto get_number_of_gauss_nodes() const {return p_nodes.rows();}
+    inline auto get_number_of_gauss_nodes() const {return (p_degrees[0]+1)*(p_degrees[1]+1);}
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0,0));};
