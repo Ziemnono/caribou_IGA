@@ -26,16 +26,16 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron10].h
 
     # Hyper Elastic spline force field
-    Forcefield/HyperelasticSplineForcefield.h
-    Forcefield/HyperelasticSplineForcefield[NurbsSurf].h
+#    Forcefield/HyperelasticSplineForcefield.h
+#    Forcefield/HyperelasticSplineForcefield[NurbsSurf].h
 
-    # Elastic spline forcefield
+#    # Elastic spline forcefield
     Forcefield/ElasticSplineForcefield.h
     Forcefield/ElasticSplineForcefield[NurbsSurf].h
 
     # Traction force field
-    Forcefield/TractionSplineForcefield.h
-    Forcefield/TractionSplineForcefield[NurbsSurf].h
+#    Forcefield/TractionSplineForcefield.h
+#    Forcefield/TractionSplineForcefield[NurbsSurf].h
 
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
@@ -55,8 +55,8 @@ set(HEADER_FILES
     Mass/CaribouMass[Hexahedron20].h
 
     # Spline Mass Matrix
-    Mass/CaribouSplineMass.h
-    Mass/CaribouSplineMass[NurbsSurf].h
+#    Mass/CaribouSplineMass.h
+#    Mass/CaribouSplineMass[NurbsSurf].h
 
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
@@ -109,19 +109,19 @@ set(TEMPLATE_FILES
     Forcefield/TractionForcefield.inl
 
     # Hyper Elastic spline force field
-    Forcefield/HyperelasticSplineForcefield.inl
+#    Forcefield/HyperelasticSplineForcefield.inl
 
     # Hyper elastic spline forcefield
     Forcefield/ElasticSplineForcefield.inl
 
     # Traction force field
-    Forcefield/TractionSplineForcefield.inl
+#    Forcefield/TractionSplineForcefield.inl
 
     Mapping/CaribouBarycentricMapping.inl
     Mass/CaribouMass.inl
 
     # Spline Mass Matrix
-    Mass/CaribouSplineMass.h
+#    Mass/CaribouSplineMass.h
 
     Solver/ConjugateGradientSolver.inl
     Solver/EigenSolver.inl
@@ -129,7 +129,6 @@ set(TEMPLATE_FILES
 
     # CaribouSplineTopology
     Topology/CaribouSplineTopology.inl
-
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl
@@ -156,10 +155,10 @@ set(SOURCE_FILES
     # Elastic spline forcefield
     Forcefield/ElasticSplineForcefield[NurbsSurf].cpp
     # Hyper elastic spline forcefield
-    Forcefield/HyperelasticSplineForcefield[NurbsSurf].cpp
+#    Forcefield/HyperelasticSplineForcefield[NurbsSurf].cpp
 
     # Traction Spline forcefield
-    Forcefield/TractionSplineForcefield[NurbsSurf].cpp
+#    Forcefield/TractionSplineForcefield[NurbsSurf].cpp
 
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
@@ -176,7 +175,7 @@ set(SOURCE_FILES
     Mass/CaribouMass[Hexahedron20].cpp
 
     # Spline mass specialisation
-    Mass/CaribouSplineMass[NurbsSurf].cpp
+#    Mass/CaribouSplineMass[NurbsSurf].cpp
     Material/HyperelasticMaterial.cpp
     # Elastic material
     Material/ElasticMaterial.cpp

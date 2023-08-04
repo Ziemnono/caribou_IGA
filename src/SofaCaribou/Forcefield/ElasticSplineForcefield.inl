@@ -129,14 +129,18 @@ void ElasticSplineForcefield<Element>::addForce(
         // Fetch the node indices of the element
         auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
 
+        const size_t NodesPerElement = this->topology()->splinepatch()->number_of_nodes_per_elements();
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        current_nodes_position.resize(NodesPerElement, Dimension);
 
-        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        for (std::size_t i = 0; i < NodesPerElement; ++i) {
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
+        nodal_forces.resize(NodesPerElement, Dimension);
+
         nodal_forces.fill(0);
         // Jacobian para to parent
         const auto J2 = p_jacobian_pp[element_id];
@@ -167,7 +171,7 @@ void ElasticSplineForcefield<Element>::addForce(
 //            std::cout << "PK2 stress tensor  \n" << S << "\n";
 //            std::cout << "\n------------------END-------------------\n";
             // Elastic forces w.r.t the gauss node applied on each nodes
-            for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+            for (size_t i = 0; i < NodesPerElement; ++i) {
                 const auto dx = dN_dx.row(i).transpose();
                 const Vector<Dimension> f_ = (detJ * w * J2) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
@@ -176,7 +180,7 @@ void ElasticSplineForcefield<Element>::addForce(
             }
         }
 //        std::cout << "\nNodal Force \n" << nodal_forces << "\n";
-        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        for (size_t i = 0; i < NodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
             }
@@ -315,12 +319,16 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
         auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
+        const size_t NodesPerElement = this->topology()->splinepatch()->number_of_nodes_per_elements();
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> initial_nodes_position;
-        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        initial_nodes_position.resize(NodesPerElement, Dimension);
 
-        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        current_nodes_position.resize(NodesPerElement, Dimension);
+
+        for (std::size_t i = 0; i < NodesPerElement; ++i) {
             initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
@@ -328,7 +336,9 @@ SReal ElasticSplineForcefield<Element>::getPotentialEnergy (
         const auto J2 = p_jacobian_pp[element_id];
         // Compute the nodal displacement
         Matrix<NumberOfNodesPerElement, Dimension> U {};
-        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        U.resize(NodesPerElement, Dimension);
+
+        for (size_t i = 0; i < NodesPerElement; ++i) {
             const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
             for (size_t j = 0; j < Dimension; ++j) {
                 U(i, j) = u[j];
@@ -451,6 +461,9 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
     std::vector<Eigen::Triplet<Real>> triplets;
     triplets.reserve(nDofs*24*2);
 
+    const size_t NodesPerElement = this->topology()->splinepatch()->number_of_nodes_per_elements();
+
+
     std::cout << "\n ================ In Assembly ================= \n";
 
     sofa::helper::AdvancedTimer::stepBegin("ElasticSplineForcefield::update_stiffness");
@@ -461,14 +474,18 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 
         // Fetch the current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        current_nodes_position.resize(NodesPerElement, Dimension);
 
-        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        for (std::size_t i = 0; i < NodesPerElement; ++i) {
             current_nodes_position.row(i).noalias() = x.row(node_indices[i]).template cast<Real>();
         }
 
-        using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
-        Stiffness Ke = Stiffness::Zero();
+        using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement, NumberOfNodesPerElement, Eigen::RowMajor>;
 
+        Stiffness Ke;
+        Ke.resize(NodesPerElement*Dimension, NodesPerElement*Dimension);
+        Ke.setZero();
+//        Ke.resize(NodesPerElement*Dimension, NodesPerElement*Dimension);
         // Jacobian para to parent
         const auto J2 = p_jacobian_pp[element_id];
         int count = 1;
@@ -485,9 +502,11 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
             // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
             const auto D = material->elasticity_matrix();
 
-            Matrix<3, NumberOfNodesPerElement*Dimension> B;
+            Matrix<3, -1> B;
+            B.resize(3, NodesPerElement*Dimension);
             B.setZero();
-            for (int i = 0; i<NumberOfNodesPerElement; i++){
+
+            for (size_t i = 0; i<NodesPerElement; i++){
                 B(0, i*Dimension) = dN_dx(i, 0);
                 B(1, i*Dimension + 1) = dN_dx(i, 1);
                 B(2, i*Dimension) = dN_dx(i, 1);
@@ -512,7 +531,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 
 
 #pragma omp critical
-        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+        for (std::size_t i = 0; i < NodesPerElement; ++i) {
             // Node index of the ith node in the global stiffness matrix
             const auto x = static_cast<int>(node_indices[i]*Dimension);
             for (int m = 0; m < Dimension; ++m) {
@@ -521,7 +540,7 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
                 }
             }
 
-            for (std::size_t j = i+1; j < NumberOfNodesPerElement; ++j) {
+            for (std::size_t j = i+1; j < NodesPerElement; ++j) {
                 // Node index of the jth node in the global stiffness matrix
                 const auto y = static_cast<int>(node_indices[j]*Dimension);
                 for (int m = 0; m < Dimension; ++m) {
@@ -556,6 +575,8 @@ void ElasticSplineForcefield<Element>::assemble_stiffness(const Eigen::MatrixBas
 template <typename Element>
 auto ElasticSplineForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
     GaussContainer gauss_nodes {};
+//    const size_t NodesPerElement = this->topology()->splinepatch()->number_of_nodes_per_elements();
+
     if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
     }
@@ -568,8 +589,10 @@ auto ElasticSplineForcefield<Element>::get_gauss_nodes(const std::size_t & /*ele
         const auto detJ = std::abs(J.determinant());
 
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-        const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
-            (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
+        Matrix<NumberOfNodesPerElement, Dimension> dN_dx;
+//        dN_dx.resize(NodesPerElement, Dimension);
+//        Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Dimension, Eigen::RowMajor> dN_dx;
+        dN_dx = (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
         GaussNode & gauss_node = gauss_nodes[gauss_node_id];
         gauss_node.weight               = g.weight;

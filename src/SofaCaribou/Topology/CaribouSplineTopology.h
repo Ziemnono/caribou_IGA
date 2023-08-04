@@ -205,8 +205,8 @@ private:
     Data<VecCoord> d_position;
 
     /// Node indices (w.r.t the position vector) of each elements.
-//    Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
-    Data<sofa::type::vector<sofa::type::vector<PointID>>> d_indices;
+    Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>> d_indices;
+//    Data<sofa::type::vector<sofa::type::vector<PointID>>> d_indices;
 
 
 //    /// Knot ranges

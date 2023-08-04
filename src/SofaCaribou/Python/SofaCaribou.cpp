@@ -15,8 +15,8 @@
 #include <SofaCaribou/Python/Topology/CaribouSplineTopology.h>
 #include <SofaCaribou/Python/Forcefield/ElasticSplineForcefield.h>
 
-#include <SofaCaribou/Python/Forcefield/HyperelasticSplineForcefield.h>
-#include <SofaCaribou/Python/Forcefield/TractionSplineForcefield.h>
+//#include <SofaCaribou/Python/Forcefield/HyperelasticSplineForcefield.h>
+//#include <SofaCaribou/Python/Forcefield/TractionSplineForcefield.h>
 #include <vector>
 #include <pybind11/stl_bind.h>
 
@@ -42,7 +42,7 @@ PYBIND11_MODULE(SofaCaribou, m) {
 
     SofaCaribou::forcefield::python::addElasticSplineForcefield(m);
 
-    SofaCaribou::forcefield::python::addHyperelasticSplineForcefield(m);
+//    SofaCaribou::forcefield::python::addHyperelasticSplineForcefield(m);
 
     // Solver bindings
     SofaCaribou::solver::python::addConjugateGradientSolver(m);

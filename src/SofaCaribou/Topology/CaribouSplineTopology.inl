@@ -35,9 +35,6 @@ CaribouSplineTopology<Element>::CaribouSplineTopology ()
 , d_knot_2(initData(&d_knot_2,
     "knot_2",
     "weight vector of the patch nodes."))
-//, d_extractions(initData(&d_extractions,
-//    "extractions",
-//    "vector of extraction_matrix of each element"))
 {}
 
 template <typename Element>
@@ -47,15 +44,16 @@ void CaribouSplineTopology<Element>::attachSplinePatch(const caribou::topology::
     using namespace sofa::helper;
     auto degrees = WriteOnlyAccessor<Data<sofa::type::vector<UNSIGNED_INTEGER_TYPE>>>(d_degrees);
     auto positions = WriteOnlyAccessor<Data<VecCoord>>(d_position);
-    auto indices = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::vector<PointID>>>>(d_indices);
+//    auto indices = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::vector<PointID>>>>(d_indices);
+    auto indices = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>>>(d_indices);
     auto knot_spans = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<Real, KnotDimension>>>>(d_knot_spans);
     auto weights = WriteOnlyAccessor<Data<sofa::type::vector<Real>>>(d_weights);
     auto knot_1 = WriteOnlyAccessor<Data<sofa::type::vector<Real>>>(d_knot_1);
     auto knot_2 = WriteOnlyAccessor<Data<sofa::type::vector<Real>>>(d_knot_2);
 
     degrees.resize(2);
-    degrees[0] = static_cast<UNSIGNED_INTEGER_TYPE>(2);
-    degrees[1] = static_cast<UNSIGNED_INTEGER_TYPE>(2);
+    degrees[0] = static_cast<UNSIGNED_INTEGER_TYPE>(patch->degree_1());
+    degrees[1] = static_cast<UNSIGNED_INTEGER_TYPE>(patch->degree_2());
     const auto nodes_per_element = patch->number_of_nodes_per_elements();
     const auto number_of_elements = patch->number_of_elements();
     indices.resize(number_of_elements);
@@ -64,7 +62,7 @@ void CaribouSplineTopology<Element>::attachSplinePatch(const caribou::topology::
     for (sofa::Index element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto element_indices = patch->element_indices(element_id);
         const auto element_knots = patch->element_knotranges(element_id);
-        indices[element_id].resize(nodes_per_element);
+//        indices[element_id].resize(nodes_per_element);
         for (sofa::Index node_id = 0; node_id < nodes_per_element; ++node_id) {
             indices[element_id][node_id] = static_cast<PointID>(element_indices[node_id]);
         }
@@ -114,7 +112,8 @@ void CaribouSplineTopology<Element>::intialise_from_scene(void){
     }
 
     // Sanity checks
-    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::vector<PointID>>>>(d_indices);
+    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, 9>>>>(d_indices);
+//    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::vector<PointID>>>>(d_indices);
 //    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::vector<PointID>>>>(d_indices);
 
     if (indices.empty()) {
@@ -161,7 +160,7 @@ void CaribouSplineTopology<Element>::intialise_from_scene(void){
         const auto number_of_weights = weights.size();
 
         const auto number_of_elements = indices.size();
-        const auto nodes_per_element = indices[0].size();
+//        const auto nodes_per_element = indices[0].size();
 
         const auto knot_1_size = knot_1.size();
         const auto knot_2_size = knot_2.size();
@@ -177,17 +176,17 @@ void CaribouSplineTopology<Element>::intialise_from_scene(void){
         msg_warning() << "Knot spans size " << knot_spans.size() << " ";
         msg_warning() << "Knot 1 size     " << knot_1.size() << " ";
         msg_warning() << "Knot 2 size     " << knot_2.size() << " ";
-        msg_warning() << "Nodes per elem  " << nodes_per_element << " ";
+        msg_warning() << "Nodes per elem  " << 9 << " ";
         Double_Matrix s_initial_positions(positions.size(), Dimension);
         Double_Vector s_weights(weights.size());
-        USInt_Matrix s_indices(indices.size(),nodes_per_element);
+        USInt_Matrix s_indices(indices.size(),9);
         Double_Matrix s_knot_ranges(knot_spans.size(),KnotDimension);
         Double_Vector s_knot1(knot_1_size);
         Double_Vector s_knot2(knot_2_size);
         USInt_Vector s_degrees(2);
 
         // Degrees
-        s_degrees << 2, 2;
+        s_degrees << degrees[0], degrees[1];
         // Position and Weights
         for (std::size_t i = 0; i < number_of_nodes; ++i) {
             const auto & n = positions[i];
@@ -200,7 +199,7 @@ void CaribouSplineTopology<Element>::intialise_from_scene(void){
         // Indices and knot spans
         for (std::size_t i = 0; i < number_of_elements; i++){
             const auto & ind = indices[i];
-            for (int j = 0; j < static_cast<int>(nodes_per_element); ++j) {
+            for (int j = 0; j < static_cast<int>(9); ++j) {
                 s_indices(i, j) = ind[j];
             }
             const auto & k_span = knot_spans[i];

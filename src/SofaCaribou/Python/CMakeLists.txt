@@ -17,8 +17,8 @@ set(HEADER_FILES
 
     Topology/CaribouSplineTopology.h
     Forcefield/ElasticSplineForcefield.h
-    Forcefield/HyperelasticSplineForcefield.h
-    Forcefield/TractionSplineForcefield.h
+#    Forcefield/HyperelasticSplineForcefield.h
+#    Forcefield/TractionSplineForcefield.h
 
 )
 
@@ -38,8 +38,8 @@ set(SOURCE_FILES
 
     Topology/CaribouSplineTopology.cpp
     Forcefield/ElasticSplineForcefield.cpp
-    Forcefield/HyperelasticSplineForcefield.cpp
-    Forcefield/TractionSplineForcefield.cpp
+#    Forcefield/HyperelasticSplineForcefield.cpp
+#    Forcefield/TractionSplineForcefield.cpp
 )
 
 set(PYTHON_FILES

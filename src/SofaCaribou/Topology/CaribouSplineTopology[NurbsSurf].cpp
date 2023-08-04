@@ -62,7 +62,7 @@ namespace sofa::core::objectmodel {
 using namespace SofaCaribou::topology;
 
 [[maybe_unused]]
-static int _c_ = RegisterObject("Caribou topology")
+static int _c_ = RegisterObject("Caribou spline topology")
 .add<CaribouSplineTopology<NurbsSurf<_2D>>>()
 .add<CaribouSplineTopology<NurbsSurf<_3D>>>()
 ;
