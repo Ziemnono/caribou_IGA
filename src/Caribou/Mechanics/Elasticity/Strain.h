@@ -49,11 +49,21 @@ F (const Matrix<NumberOfNodes, Dimension, Options> & dN_dx, const Matrix<NumberO
 {
     const auto Id = Matrix<Dimension, Dimension>::Identity();
     Matrix<Dimension, Dimension> GradU = U.row(0).transpose() * dN_dx.row(0);
-    for (size_t i = 1; i < NumberOfNodes; ++i) {
-        GradU.noalias() += U.row(i).transpose() * dN_dx.row(i);
+    if (NumberOfNodes == caribou::Dynamic){
+        const size_t NodePerElement = dN_dx.rows();
+        for (size_t i = 1; i < NodePerElement; ++i) {
+            GradU.noalias() += U.row(i).transpose() * dN_dx.row(i);
+        }
     }
+    else {
+        for (size_t i = 1; i < NumberOfNodes; ++i) {
+            GradU.noalias() += U.row(i).transpose() * dN_dx.row(i);
+        }
+    }
+
     return GradU + Id;
 }
+
 
 } // namespace caribou::mechanics::elasticity::strain
 
