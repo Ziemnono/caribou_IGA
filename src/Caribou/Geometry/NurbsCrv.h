@@ -127,13 +127,13 @@ private:
 
     inline auto get_gauss_nodes() const -> const auto & {
         static std::vector<GaussNode> gauss_nodes;
-        auto no_gauss_nodes = this->p_degree_u;
+        int no_gauss_nodes = this->p_degree_u;
         gauss_nodes.resize(no_gauss_nodes);
 
         Quadrature q(no_gauss_nodes);
 
         for (int i = 0; i < no_gauss_nodes; ++i) {
-            gauss_nodes(i) = GaussNode{LocalCoordinates(q.get_point(i)), q.get_weight(i)};
+            gauss_nodes[i] = GaussNode{LocalCoordinates(q.get_point(i)), q.get_weight(i)};
         }
 
         return gauss_nodes;

@@ -196,13 +196,13 @@ private:
 
         static std::vector<GaussNode> gauss_nodes;
         gauss_nodes.resize(no_gauss_nodes);
-        std::cout << "Gauss nodes is called \n";
+//        std::cout << "Gauss nodes is called \n";
         Quadrature quad_u(gauss_u);
         Quadrature quad_v(gauss_v);
         int count = 0;
-        for (int j = 0; j < gauss_u; ++j) {
-            for (int i = 0; i < gauss_v; ++i) {
-                gauss_nodes[count] = GaussNode{LocalCoordinates(quad_u.get_point(i), quad_v.get_point(j)), quad_u.get_weight(i) * quad_v.get_weight(j)};
+        for (int j = 0; j < gauss_v; ++j) {
+            for (int i = 0; i < gauss_u; ++i) {
+                gauss_nodes[count] = GaussNode{LocalCoordinates(quad_v.get_point(j), quad_u.get_point(i)), quad_v.get_weight(i) * quad_u.get_weight(j)};
                 count++;
             }
         }
