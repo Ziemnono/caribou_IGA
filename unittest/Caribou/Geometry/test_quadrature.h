@@ -34,17 +34,31 @@ TEST(Quadrature, Order_Three) {
     }
 }
 
-//TEST(NurbsUtils, degree2) {
-//    using namespace caribou;
-//    {
-//        using Nutils = caribou::geometry::NURBS_utils;
-//        using Dyn_Vector = geometry::Dyn_Vector;
-//        int degree = 2;
-//        Nutils N;
-//        Dyn_Vector knots(7);
-//        knots << 0., 0., 0., 0.5, 1., 1., 1.;
+TEST(Quadrature, Two_dimensional) {
+    using namespace caribou;
+    {
+        using Quadrature = caribou::geometry::Quadrature;
 
-//        Dyn_Vector span(2);
-//        span << 0., 0.5;
-//    }
-//}
+        const int gauss_u = 3; // Gauss points in U direction
+        const int gauss_v = 3; // Gauss points in V direction
+
+        std::cout << "Gauss nodes test is runnig\n";
+        Quadrature quad_u(gauss_u);
+        Quadrature quad_v(gauss_v);
+        int count = 0;
+        for (int j = 0; j < gauss_v; ++j) {
+            for (int i = 0; i < gauss_u; ++i) {
+
+                if ((count == 5) || (count == 7)){
+                    std::cout << "============== " << count << " ===============\n";
+                    std::cout << "q x : " << quad_v.get_point(j) << "\n";
+                    std::cout << "q y : " << quad_u.get_point(i) << "\n";
+                    std::cout << "w   : " << quad_v.get_weight(i) * quad_u.get_weight(j) << "\n";
+                }
+                count++;
+            }
+        }
+
+    }
+}
+

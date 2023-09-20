@@ -79,7 +79,7 @@ TEST(NurbsSurf, LinearQuadratic) {
     using namespace caribou;
     {
         using NURBS = caribou::geometry::NurbsSurf<_2D>;
-//        using LocalCoordinates = NURBS::LocalCoordinates;
+        using LocalCoordinates = NURBS::LocalCoordinates;
 
         Eigen::Matrix<UNSIGNED_INTEGER_TYPE, 2,1> degrees;
         degrees << 2, 1;
@@ -106,6 +106,12 @@ TEST(NurbsSurf, LinearQuadratic) {
 
         NURBS elem_1(degrees, pnts, knot1, knot2, wgts, span);
 //        elem_1.print();
+
+        LocalCoordinates l{0,0};
+        std::cout << "At 0, 0  --> " << elem_1.world_coordinates(l) << "\n";
+
+        LocalCoordinates l2{0.25,0.25};
+        std::cout << "At 0.25, 0.25  --> " << elem_1.world_coordinates(l2) << "\n";
 
     }
 }
