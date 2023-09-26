@@ -22,6 +22,20 @@ template <>
 auto CaribouSplineForcefield<NurbsSurf<_2D>>::templateName(const CaribouSplineForcefield<NurbsSurf<_2D>> *) -> std::string {
     return SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_2D>>::templateName();
 }
+
+template <>
+void CaribouSplineForcefield<NurbsSurf<_2D>>::triangulate_face(const NurbsSurf<_2D> & /*e*/, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & /*triangles_nodes*/)
+{
+    std::cout << "Trinagulate the faces 2D NURBS Surf \n";
+//    int divs = 4;
+
+//    int ncells = divs * divs;
+
+//    using LocalCoordinates = NurbsSurf<_2D>::LocalCoordinates;
+
+
+}
+
 // This will force the compiler to compile the following templated class
 template class CaribouSplineForcefield<NurbsSurf<_2D>>;
 
@@ -29,6 +43,19 @@ template class CaribouSplineForcefield<NurbsSurf<_2D>>;
 template <>
 auto CaribouSplineForcefield<NurbsSurf<_3D>>::templateName(const CaribouSplineForcefield<NurbsSurf<_3D>> *) -> std::string {
     return SofaCaribou::topology::CaribouSplineTopology<NurbsSurf<_3D>>::templateName();
+}
+
+template <>
+void CaribouSplineForcefield<NurbsSurf<_3D>>::triangulate_face(const NurbsSurf<_3D> & /*e*/, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & /*triangles_nodes*/)
+{
+    std::cout << "Trinagulate the faces 3D NURBS Surf \n";
+//    int divs = 4;
+
+//    int ncells = divs * divs;
+
+//    using LocalCoordinates = NurbsSurf<_2D>::LocalCoordinates;
+
+
 }
 
 // This will force the compiler to compile the following templated class

@@ -193,149 +193,168 @@ auto CaribouSplineForcefield<Element>::canCreate(Derived *o,
     return Inherit1::canCreate(o, context, arg);
 }
 
-//template<typename Element>
-//void CaribouSplineForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
-//    using Color = sofa::type::RGBAColor;
-//    static constexpr auto CanonicalDimension = caribou::geometry::traits<Element>::CanonicalDimension;
+template<typename Element>
+void CaribouSplineForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
+    using Color = sofa::type::RGBAColor;
+    static constexpr auto CanonicalDimension = caribou::geometry::traits<Element>::CanonicalDimension;
 
-//    [[maybe_unused]]
-//    static const unsigned long long kelly_colors_hex[] =
-//    {
-//        0xFFFFB300, // Vivid Yellow
-//        0xFF803E75, // Strong Purple
-//        0xFFFF6800, // Vivid Orange
-//        0xFFA6BDD7, // Very Light Blue
-//        0xFFC10020, // Vivid Red
-//        0xFFCEA262, // Grayish Yellow
-//        0xFF817066, // Medium Gray
+    using LocalCoordinate = typename Element::LocalCoordinates;
+    using Scalar = typename Element::Scalar;
 
-//        // The following don't work well for people with defective color vision
-//        0xFF007D34, // Vivid Green
-//        0xFFF6768E, // Strong Purplish Pink
-//        0xFF00538A, // Strong Blue
-//        0xFFFF7A5C, // Strong Yellowish Pink
-//        0xFF53377A, // Strong Violet
-//        0xFFFF8E00, // Vivid Orange Yellow
-//        0xFFB32851, // Strong Purplish Red
-//        0xFFF4C800, // Vivid Greenish Yellow
-//        0xFF7F180D, // Strong Reddish Brown
-//        0xFF93AA00, // Vivid Yellowish Green
-//        0xFF593315, // Deep Yellowish Brown
-//        0xFFF13A13, // Vivid Reddish Orange
-//        0xFF232C16, // Dark Olive Green
-//    };
+    [[maybe_unused]]
+    static const unsigned long long kelly_colors_hex[] =
+    {
+        0xFFFFB300, // Vivid Yellow
+        0xFF803E75, // Strong Purple
+        0xFFFF6800, // Vivid Orange
+        0xFFA6BDD7, // Very Light Blue
+        0xFFC10020, // Vivid Red
+        0xFFCEA262, // Grayish Yellow
+        0xFF817066, // Medium Gray
 
-//    if (!vparams->displayFlags().getShowForceFields())
-//        return;
+        // The following don't work well for people with defective color vision
+        0xFF007D34, // Vivid Green
+        0xFFF6768E, // Strong Purplish Pink
+        0xFF00538A, // Strong Blue
+        0xFFFF7A5C, // Strong Yellowish Pink
+        0xFF53377A, // Strong Violet
+        0xFFFF8E00, // Vivid Orange Yellow
+        0xFFB32851, // Strong Purplish Red
+        0xFFF4C800, // Vivid Greenish Yellow
+        0xFF7F180D, // Strong Reddish Brown
+        0xFF93AA00, // Vivid Yellowish Green
+        0xFF593315, // Deep Yellowish Brown
+        0xFFF13A13, // Vivid Reddish Orange
+        0xFF232C16, // Dark Olive Green
+    };
 
-//    const auto nb_elements = number_of_elements();
+    if (!vparams->displayFlags().getShowForceFields())
+        return;
 
-//    if (nb_elements == 0)
-//        return;
+    const auto nb_elements = number_of_elements();
 
-//    vparams->drawTool()->saveLastState();
-//    if (vparams->displayFlags().getShowWireFrame())
-//        vparams->drawTool()->setPolygonMode(0,true);
-//    vparams->drawTool()->disableLighting();
+    if (nb_elements == 0)
+        return;
+
+    vparams->drawTool()->saveLastState();
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,true);
+    vparams->drawTool()->disableLighting();
 
 //    const double & scale = d_drawScale.getValue();
-//    const VecCoord& sofa_x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
-//    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
+    const VecCoord& sofa_x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
 
-//    // For 1D, we draw edges.
-//    std::vector<sofa::type::Vector3> edges;
-//    if constexpr(CanonicalDimension == 1) {
-//        std::size_t nnodes = (NumberOfNodesPerElement==caribou::Dynamic ? 1 : NumberOfNodesPerElement);
-//        edges.reserve(nb_elements * nnodes);
-//    }
+    // Subdivision of an element
 
-//    // For 2D and 3D, we draw triangles.
-//    // We create groups of faces to draw. Each group will be assigned with a color.
-//    // For 2D, there is only one group (one "visible" face per element...).
-//    // For 3D, each face of an element is assigned to a group, hence will have a different color.
-//    std::vector<std::vector<sofa::type::Vector3>> triangle_groups;
-//    if constexpr(CanonicalDimension == 2) {
-//        triangle_groups.resize(1);
-//        auto nnodes = (NumberOfNodesPerElement==caribou::Dynamic ? 1 : NumberOfNodesPerElement);
-//        triangle_groups[0].reserve(nb_elements*nnodes);
-//    } else if constexpr(CanonicalDimension == 3) {
-//        using FaceType = typename caribou::geometry::traits<Element>::BoundaryElementType;
-//        constexpr static auto NumberOfFaces = caribou::geometry::traits<Element>::NumberOfBoundaryElementsAtCompileTime;
-//        constexpr static auto NumberOfNodesPerFaces = caribou::geometry::traits<FaceType>::NumberOfNodesAtCompileTime;
-//        std::size_t nfaces = (NumberOfFaces == caribou::Dynamic ? 0 : NumberOfFaces);
-//        std::size_t nnodes = (NumberOfNodesPerFaces == caribou::Dynamic ? 1 : NumberOfFaces);
-//        triangle_groups.resize(nfaces);
-//        for (std::size_t face_id = 0; face_id < nfaces; ++face_id) {
-//            triangle_groups[face_id].reserve(nb_elements*nnodes);
-//        }
-//    }
+    const int ndivs = 2; // divisions in a row.
+    const int ncells = ndivs * ndivs; // Total number of cells.
+    const int tpnts = (ndivs+1) * (ndivs+1);
 
-//    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-//        // Fetch the node indices of the element
-//        auto node_indices = this->topology()->domain()->element_indices(element_id);
-//        Matrix<NumberOfNodesPerElement, Dimension> element_nodes_position;
+    int tcells = ncells * nb_elements; // Total number of cells in whole geometry.
 
-//        if constexpr(NumberOfNodesPerElement == caribou::Dynamic) {
-//            element_nodes_position.resize(node_indices.rows(), Dimension);
-//        }
+    // For 2D and 3D, we draw triangles.
+    // We create groups of faces to draw. Each group will be assigned with a color.
+    // For 2D, there is only one group (one "visible" face per element...).
+    // For 3D, each face of an element is assigned to a group, hence will have a different color.
+    std::vector<std::vector<sofa::type::Vector3>> triangle_groups;
+    if constexpr(CanonicalDimension == 2) {
+        triangle_groups.resize(1);
+        auto nnodes = 10; // 4 Nodes per every quad elements.
+        triangle_groups[0].reserve(tcells*nnodes); // Numb
+    } else {
+        std::cout << "ONLY SURFACES CAN BE VISUALISED\n";
+    }
 
-//        // Fetch the initial positions of the element's nodes
-//        for (Eigen::Index node_id = 0; node_id < element_nodes_position.rows(); ++node_id) {
-//            element_nodes_position.row(node_id) = X.row(node_indices[node_id]);
-//        }
+    // ------------------ NURBS HELPERS START --------------------
 
-//        // Create an Element instance from the node positions
-//        const Element e = Element(element_nodes_position);
+    const Scalar limit = -0.999999;
+    const Scalar increment = -2*limit/ndivs;
+    std::vector<LocalCoordinate> grid_points;
+    grid_points.resize(tpnts);
+    int count = 0;
+    for( int vi = 0; vi <= ndivs; vi++){
+        for( int ui = 0; ui <= ndivs; ui++){
+            grid_points[count] = LocalCoordinate(limit + increment*ui, limit + increment*vi);
+            count++;
+        }
+    }
+    // Storing NURBS quad node connection data. This will be used in triangularizing the grid.
+    Eigen::Matrix<UNSIGNED_INTEGER_TYPE, -1, 4> tn_inds;
+    tn_inds.resize(ncells, 4);
+    int val;
+    count = 0;
+    for (int cell = 0; cell < ncells; ++cell) {
+        if ((cell != 0) && ((cell)%ndivs == 0)){ count++; }
+        val = cell+count;
+        tn_inds.row(cell) << val, val+1, val+ndivs+1, val+ndivs+2;
+    }
 
-//        // Scale down the element around its center point
-//        const auto c = e.center();
-//        for (Eigen::Index node_id = 0; node_id < element_nodes_position.rows(); ++node_id) {
-//            const auto & p = element_nodes_position.row(node_id).transpose();
-//            element_nodes_position.row(node_id) = (c + (p - c)*scale).transpose();
-//        }
-//        const Element scaled_element = Element(element_nodes_position);
+    // ------------------ NURBS HELPERS END ----------------------
 
-//        if constexpr (CanonicalDimension == 1) {
-//            // 1D elements: we draw edges
-//            for (Eigen::Index node_id = 0; node_id < element_nodes_position.rows(); ++node_id) {
-//                edges.template emplace_back(element_nodes_position.row(node_id).data());
-//            }
-//        } else if constexpr(CanonicalDimension > 1) {
-//            // 2D and 3D elements: we draw triangles
-//            if constexpr(CanonicalDimension == 2) {
-//                // 2D elements: we triangulate only one face
-//                this->triangulate_face(scaled_element, 0, triangle_groups[0]);
-//            } else {
-//                // 3D elements: we triangulate multiple faces
-//                const auto number_of_faces = e.boundary_elements_node_indices().size();
-//                triangle_groups.resize(number_of_faces);
-//                for (std::size_t face_id = 0; face_id < number_of_faces; ++face_id) {
-//                    this->triangulate_face(scaled_element, face_id, triangle_groups[face_id]);
-//                }
-//            }
-//        }
-//    }
+    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
+        // Fetch the node indices of the element
+        auto node_indices = this->topology()->splinepatch()->element_indices(element_id);
+        Matrix<NumberOfNodesPerElement, Dimension> element_nodes_position;
 
-//    if (not edges.empty()) {
-//        vparams->drawTool()->drawLines(edges, 1, Color::black());
-//    }
+        if constexpr(NumberOfNodesPerElement == caribou::Dynamic) {
+            element_nodes_position.resize(node_indices.rows(), Dimension);
+        }
 
-//    for (std::size_t group_id = 0; group_id < triangle_groups.size(); ++group_id) {
-//        const auto & triangles = triangle_groups[group_id];
-//        const auto &hex_color = kelly_colors_hex[group_id % 20];
-//        const Color group_color(
-//            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(16))) / 255.),
-//            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(8))) / 255.),
-//            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0))) / 255.),
-//            static_cast<float> (1)
-//        );
-//        vparams->drawTool()->drawTriangles(triangles, group_color);
-//    }
+        // Fetch the initial positions of the element's nodes
+        for (Eigen::Index node_id = 0; node_id < element_nodes_position.rows(); ++node_id) {
+            element_nodes_position.row(node_id) = X.row(node_indices[node_id]);
+        }
 
-//    if (vparams->displayFlags().getShowWireFrame())
-//        vparams->drawTool()->setPolygonMode(0,false);
+        // Element NURBS data
+        auto degrees = this->topology()->splinepatch()->get_degrees();               // degrees
+        auto knot1 = this->topology()->splinepatch()->knot_1();                      // knot1
+        auto knot2 = this->topology()->splinepatch()->knot_2();                      // knot2
+        auto weights = this->topology()->splinepatch()->weights(node_indices);       // weights
+        auto knot_span = this->topology()->splinepatch()->knot_range(element_id);    // knot_span
 
-//    vparams->drawTool()->restoreLastState();
-//}
+        // Create an Element instance from the node positions
+        const Element scaled_element = Element(degrees, element_nodes_position, knot1, knot2, weights, knot_span); // changed e to scaled_element.
+
+        // 2D and 3D elements: we draw triangles
+        if constexpr(CanonicalDimension == 2) {
+            // 2D elements: we triangulate only one face
+
+            for (int cell = 0; cell < ncells; ++cell) {
+
+                auto triangle_1 = std::vector {scaled_element.world_coordinates(grid_points[tn_inds(cell, 0)]),
+                                               scaled_element.world_coordinates(grid_points[tn_inds(cell, 1)]),
+                                               scaled_element.world_coordinates(grid_points[tn_inds(cell, 2)])};
+
+                auto triangle_2 = std::vector {scaled_element.world_coordinates(grid_points[tn_inds(cell, 1)]),
+                                               scaled_element.world_coordinates(grid_points[tn_inds(cell, 2)]),
+                                               scaled_element.world_coordinates(grid_points[tn_inds(cell, 3)])};
+                for (const auto &n : triangle_1) {
+                    triangle_groups[0].emplace_back(n[0], n[1], 0);
+                }
+                for (const auto &n : triangle_2) {
+                    triangle_groups[0].emplace_back(n[0], n[1], 0);
+                }
+            }
+        }
+    }
+
+    for (std::size_t group_id = 0; group_id < triangle_groups.size(); ++group_id) {
+        const auto & triangles = triangle_groups[group_id];
+        const auto &hex_color = kelly_colors_hex[group_id % 20];
+        const Color group_color(
+            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(16))) / 255.),
+            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(8))) / 255.),
+            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0))) / 255.),
+            static_cast<float> (1)
+        );
+        vparams->drawTool()->drawTriangles(triangles, group_color);
+    }
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,false);
+
+    vparams->drawTool()->restoreLastState();
+}
 
 } // namespace SofaCaribou::forcefield
